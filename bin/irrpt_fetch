@@ -1,0 +1,233 @@
+#!/usr/local/bin/php
+<?php
+
+$currentpath = dirname(realpath(__FILE__));
+require("{$currentpath}/../conf/irrpt.conf");
+require("{$currentpath}/../inc/irrquery.inc");
+require("{$currentpath}/../inc/exclusions.inc");
+require("{$currentpath}/../inc/cvs.inc");
+require("{$currentpath}/../inc/status.inc");
+
+
+$o_asn		= 0;			/* Default ASN to fetch: all */
+$o_verbose      = 0;			/* Default to verbose off */
+$irr		= new IRRQuery;		/* Open our IRRQuery class */
+$cvs		= new CVS;		/* Open our CVS class */
+$count		= 0;
+$offset		= 0;
+
+
+function track($file)
+{
+	global $cvs;
+	global $cfg;
+
+	if (($rev = $cvs->update($file)) == FALSE) {
+		status(STATUS_ERROR, "Error: Unable to perform CVS update.");
+		return FALSE;
+	}
+
+	if ($rev['old'] == "0.00")
+		status(STATUS_INFO, sprintf("   - Importing %-45s version %s", $file, $rev['new']));
+	else if ($rev['old'] != $rev['new'])
+		status(STATUS_INFO, sprintf("   - Updating  %-45s version %s -> %s", $file, $rev['old'], $rev['new']));
+
+	return $rev;
+}
+
+function update_email($file, $email, $asn, $object, $rev, $type)
+{
+	global $cvs;
+	global $cfg;
+	$content = "";
+
+	if ($rev['old'] == $rev['new'])
+		return;
+
+	$headers  = "From: {$cfg['update']['from']}\n";
+	$headers .= "Reply-To: {$cfg['update']['reply-to']}\n";
+	$headers .= "Date: " . date("r") . "\n";
+
+	if ($rev['old'] != "0.00") {
+	        $content .= "Changes for AS{$asn} (object {$object}) ({$type}):\n\n";
+	        $content .= $cvs->get_diff($file, $rev);
+        	$content .= "\n\n";
+		$subject = $cfg['update']['subject'] . "AS{$asn} ({$type} Changes)";
+	} else
+		$subject = $cfg['update']['subject'] . "AS{$asn} ({$type} Initial Import)";
+
+        $content .= "Complete list for AS{$asn} (object {$object}) ({$type}):\n";
+        $content .= $cvs->get_complete($file);
+
+
+	if (!($email == "-" || $email == "none" || $email == "NULL")) {
+		status(STATUS_INFO, "   - Sending update notification to {$email}");
+	        mail($email, $subject, $content, $headers);
+	}
+
+        if (isset($cfg['update']['localcopy']))
+                mail($cfg['update']['localcopy'], $subject, $content, $headers);
+}
+
+
+/* Set UID specified in the config file */
+if (posix_geteuid() == 0) {
+	if ($cfg['fetch']['set_uid']) {
+		if (!($user = posix_getpwnam($cfg['fetch']['set_uid'])))
+			$user = posix_getpwuid($cfg['fetch']['set_uid']);
+
+		if (!$user) {
+			printf("Unable to change to the specified UID, aborting.\n");
+			exit(1);
+		}
+
+		posix_setuid($user['uid']);
+		posix_seteuid($user['uid']);
+	}
+}
+
+
+/* Parse through the cmdline options. */
+for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
+	if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
+		break;
+
+	switch($_SERVER['argv'][$offset]) {
+	    case "-h":
+	    case "--help":
+		printf("Usage: %s [-hv] [asn]\n", $_SERVER['argv'][0]);
+		exit(1);
+
+	    case "-v":
+	    case "--verbose":
+		$o_verbose = 1;
+		break;
+	}
+}
+
+if (isset($_SERVER['argv'][$offset+0]))
+	$o_asn = intval($_SERVER['argv'][$offset+0]);
+        
+
+/* Open the file with the list of IRR objects we will be tracking */
+if (!($irrdb = fopen($cfg['cfgfiles']['irrdb_list'], "r"))) {
+	status(STATUS_ERROR, "Unable to open irrdb config file, aborting.");
+	exit(-1);
+}
+
+/* Establish a connection with our IRR Query whois server */
+if ($irr->connect($cfg['fetch']['host'], $cfg['fetch']['port']) == FALSE) {
+	status(STATUS_ERROR, "Unable to connect to IRR Query whois server, aborting.");
+	exit(-1);
+}
+
+/* Optionally enable a local cache of prefixes per aut-num record */
+if ($cfg['fetch']['cache']) {
+	$irr->cache_set(TRUE);
+}
+
+/* If we don't want to query all IRR sources, set the new sources now */
+if ($cfg['fetch']['sources'] != "all")
+	$irr->set_sources($cfg['fetch']['sources']);
+
+/* Parse the IRRDB config file */
+while (!feof($irrdb)) {
+        $line		= rtrim(fgets($irrdb, 256));
+
+	/* Skip comments and junk lines */
+	if ((strlen($line) == 0) || ($line[0] == "#"))
+		continue;
+
+	$results	= preg_split( "/[ \t]+/", $line);
+	$asn		= $results[0];
+	$object		= $results[1];
+	$email		= $results[2];
+
+	/* Skip invalid ASNs, or ASNs we aren't interested in */
+	if (($asn < 1) || ($asn > 64512) || ($o_asn && ($asn != $o_asn)))
+		continue;
+
+	$count++;
+
+	status(STATUS_INFO, "Processing AS{$asn} (Record {$count})");
+
+	/* Figure out if we have an AUT-NUM or an AS-SET, and resolve it */
+	status(STATUS_NOTICE, "Querying IRR Object {$object}");
+	if (($routes = $irr->get_routes_by_origin($object)) == FALSE) {
+		$data = $irr->get_data_by_set($object);
+		$routes = $data['routes'];
+		$asnlist = $data['asns'];
+	} else {
+		$asnlist[0] = $object;
+	}
+
+	/* Define the paths to our local data files */
+	$routefile = $cfg['paths']['db'] . $asn;
+	$aggfile = $routefile . $cfg['aggregate']['suffix'];
+	$asnfile = $routefile . $cfg['fetch']['asn_suffix'];
+
+	/* Log the ASNs behind this object, for future AS-PATH use */
+	status(STATUS_NOTICE, "Writing ASN list to local database.");
+	if (($output = fopen($asnfile, "w")) == FALSE) {
+		status(STATUS_ERROR, "Can not open ASN list output file for {$asn}, skipping this record.");
+		continue;
+	}
+	for($i=0;$i<sizeof($asnlist);$i++)
+		fwrite($output, sprintf("%s\n", preg_replace("/[aA][sS]/", "", $asnlist[$i])));
+	fclose($output);
+
+	/* Strip out excluded routes that can not be registered */
+	status(STATUS_NOTICE, "Filtering against excluded routes.");
+	$routes = exclusions_filter($cfg['cfgfiles']['exclusions'], $routes);
+
+	/* Write the routes we've just looked up into a file */
+	status(STATUS_NOTICE, "Writing routes to local database.");
+	if (($output = fopen($routefile, "w")) == FALSE) {
+		status(STATUS_ERROR, "Can not open IRRDB output file for {$asn}, skipping this record.");
+		continue;
+	}
+	for($i=0;$i<sizeof($routes);$i++)
+		fwrite($output, sprintf("%s\n", $routes[$i]));
+	fclose($output);
+
+
+	/* Aggregate the route file with an external tool */
+	status(STATUS_NOTICE, "Aggregating routes.");
+	if (!file_exists($cfg['tools']['aggregate']) || !is_executable($cfg['tools']['aggregate'])) {
+		status(STATUS_ERROR, "Can not open aggregate tool, aborting.");
+		exit(1);
+	}
+	$cmd  = "{$cfg['tools']['aggregate']} -q {$cfg['aggregate']['params']}";
+	$cmd .= " < {$routefile} > {$aggfile}";
+	system($cmd);
+
+
+	/* Perform CVS tracking, then send e-mail updates */
+	status(STATUS_NOTICE, "Tracking data in CVS.");
+	$cvs->init($cfg['paths']['cvsroot']);
+
+	$rev = track($routefile);
+	$rev = track($aggfile);
+
+	switch ($cfg['fetch']['emailonchange']) {
+	    case "both":
+		update_email($routefile, $email, $asn, $object, $rev, "Full");
+		update_email($aggfile, $email, $asn, $object, $rev, "Aggregated");
+		break;
+	    case "full":
+		update_email($routefile, $email, $asn, $object, $rev, "Full");
+		break;
+	    case "aggregate":
+		update_email($aggfile, $email, $asn, $object, $rev, "Aggregated");
+		break;
+	    case "none":
+	    case "no":
+		break;
+	}
+}
+
+status(STATUS_INFO, "Completed processing of {$count} IRR object(s).");
+
+fclose($irrdb); 
+
+?>

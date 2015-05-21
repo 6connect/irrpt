@@ -1,0 +1,60 @@
+Project Goals: IRR PowerTools 2.0
+---------------------------------
+
+* Develop a web-based frontend for IRRPT user operation. Features include 
+  configuration management, a work queue for changes which need to be 
+  processed, an integrated route history viewer, and integrated AS-SET 
+  explorer and manual IRR query tools.
+
+* Move to an all SQL backend for route storage and configuration, in 
+  order to scale and reduce dependancy on external packages.
+
+* Add tracking of the version of the prefix-list which has been deployed 
+  to routers, sent to upstream providers via Nags, etc.
+
+* More tightly integrate prefix list deployment code into the package. 
+  This is tricky, since you need to query a db to know which devices a 
+  particular customer has sessions on. We don't want to get into the 
+  business of being a complete customer database, and we expect that 
+  most serious users will already have (or should have) an existing BGP 
+  customer and BGP session database which will probably not easily speak 
+  to our code. This needs more work.
+
+* Add support for IPv6 (queries, aggregation, filtering, and deployment).
+
+* Integrate aggregate tool functionality to remove external dependancies,
+  as well as to add IPv6 support.
+
+* Optimize code to reasonably support the automated and frequent 
+  (e.g. hourly) polling and deployment of hundreds or thousands of prefix 
+  lists. Optimize configuration deployment to pack multiple customers and 
+  BGP session updates onto a single router update.
+
+* Add support for the RIPE-style (BIRD protocol) WHOIS queries (necessary 
+  for querying IPv6 route6 objects).
+
+* Add support for automatic updating of bogon list from Cymru.
+
+* Add per-customer AS-SET member exclusion capability, for handling folks 
+  who have customers with broken records and who don't know how to fix it.
+
+* Add object-specific configuration options which can be applied in place 
+  of or in addition to the global configurations. Per-object options 
+  include the whois server to query, bogon filters, e-mail settings, 
+  etc.
+
+* Rewrite networking code to handle recovery from a lost connection to the 
+  WHOIS server. Unfortunately the RIPE protocol (above) from several 
+  serius issues, such as a lack of a command to recursively resolve AS-SET 
+  members on the server. This increases the number of transactions with the 
+  WHOIS server, increasing the processing time significantly (especially 
+  over high-latency paths between host and WHOIS server). A query against a
+  large AS-SET from the US via whois.ripe.net can take several minutes, 
+  unfortunately the RIPE whoisd has a default timeout of 3 minutes, and 
+  does not do so gracefully (the socket is closed mid-transaction).
+
+* Add support for parallel WHOIS queries to improve transaction speed.
+
+* Add checks to spot common PHP configuration issues which are not 
+  appropriate for this tool (e.g. safe_mode, limited memory use, limited 
+  execution time, etc).

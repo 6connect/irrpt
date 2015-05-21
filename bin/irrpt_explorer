@@ -1,0 +1,87 @@
+#!/usr/local/bin/php
+<?php
+
+$currentpath = dirname(realpath(__FILE__));
+require("{$currentpath}/../conf/irrpt.conf");
+require("{$currentpath}/../inc/irrquery.inc");
+require("{$currentpath}/../inc/status.inc");
+
+$o_verbose	= 0;	/* Default: verbose mode off */
+
+$irr		= new IRRQuery;	/* Open our IRRQuery class */
+$done		= array();
+
+
+function explorer($object, $depth)
+{
+	global $irr;
+	global $done;
+
+	printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
+
+	if (eregi("AS-.", $object)) {
+		if (!isset($done[strval($object)])) {
+			$done[strval($object)] = true;
+
+			if (!($members = $irr->get_members_by_set($object, FALSE))) {
+				printf(" (error)\n");
+				return FALSE;
+			}
+
+			printf("\n%s%s\n", str_repeat("  ", $depth), "{");
+
+			for($i=0;$i<sizeof($members);$i++)
+				explorer($members[$i], $depth+1);
+
+			printf("%s%s\n", str_repeat("  ", $depth), "}");
+		} else
+			printf(" (dup)\n");
+	} else {
+		printf("\n");
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+/* Parse through the cmdline options. */
+for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
+	if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
+		break;
+
+	switch($_SERVER['argv'][$offset]) {
+	    case "-h":
+	    case "--help":
+		printf("Usage: %s [-hv] <object>\n", $_SERVER['argv'][0]);
+		exit(1);
+
+	    case "-v":
+	    case "--verbose":
+		$o_verbose = 1;
+		break;
+	}
+}
+
+if (($_SERVER['argc'] - $offset) < 1) {
+	printf("Usage: %s [-hv] <object>\n", $_SERVER['argv'][0]);
+	exit(1);
+}
+
+$object = $_SERVER['argv'][$offset+0];
+
+
+
+/* Establish a connection with our IRR Query whois server */
+if ($irr->connect($cfg['fetch']['host'], $cfg['fetch']['port']) == FALSE) {
+	status(STATUS_ERROR, "Unable to connect to IRR Query whois server, aborting.");
+	exit(-1);
+}
+
+/* If the user doesn't want to query all IRR sources, set the new sources now */
+if ($cfg['fetch']['sources'] != "all")
+	$irr->set_sources($cfg['fetch']['sources']);
+
+explorer($object, 0);
+
+?>

@@ -1,0 +1,99 @@
+#!/usr/local/bin/php
+<?php
+
+$currentpath = dirname(realpath(__FILE__));
+require("{$currentpath}/../conf/irrpt.conf");
+require("{$currentpath}/../inc/irrquery.inc");
+require("{$currentpath}/../inc/status.inc");
+
+$o_aggregate	= 0;	/* Default: do not aggregate prefixes */
+$o_verbose	= 0;	/* Default: verbose mode off */
+
+$irr		= new IRRQuery;	/* Open our IRRQuery class */
+
+
+
+/* Parse through the cmdline options. */
+for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
+	if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
+		break;
+
+	switch($_SERVER['argv'][$offset]) {
+	    case "-h":
+	    case "--help":
+		printf("Usage: %s [-hva] <object>\n", $_SERVER['argv'][0]);
+		exit(1);
+
+	    case "-v":
+	    case "--verbose":
+		$o_verbose = 1;
+		break;
+
+	    case "-a":
+	    case "--aggregate":
+		$o_aggregate = 1;
+		break;
+	}
+}
+
+if (($_SERVER['argc'] - $offset) < 1) {
+	printf("Usage: %s [-hva] <object>\n", $_SERVER['argv'][0]);
+	exit(1);
+}
+
+$object = $_SERVER['argv'][$offset+0];
+
+
+
+/* Establish a connection with our IRR Query whois server */
+if ($irr->connect($cfg['fetch']['host'], $cfg['fetch']['port']) == FALSE) {
+	status(STATUS_ERROR, "Unable to connect to IRR Query whois server, aborting.");
+	exit(-1);
+}
+
+/* Optionally enable a local cache of prefixes per aut-num record */
+if ($cfg['fetch']['cache']) {
+	$irr->cache_set(TRUE);
+}
+
+/* If the user doesn't want to query all IRR sources, set the new sources now */
+if ($cfg['fetch']['sources'] != "all")
+	$irr->set_sources($cfg['fetch']['sources']);
+
+/* Figure out if we have an AUT-NUM or an AS-SET, and resolve it */
+status(STATUS_NOTICE, "Querying IRR Object {$object}");
+if (($routes = $irr->get_routes_by_origin($object)) == FALSE) {
+	$data = $irr->get_data_by_set($object);
+	$routes = $data['routes'];
+}
+
+if (!$o_aggregate) {
+	for($i=0;$i<sizeof($routes);$i++)
+		printf("%s\n", $routes[$i]);
+} else {
+	$tmpname = tempnam($cfg['paths']['tmp'], "IRRPT");
+
+	if (!($tmp = fopen($tmpname, "w"))) {
+		status(STATUS_ERROR, "Unable to open tmp file, aborting.");
+		exit(-1);
+	}
+
+	for($i=0;$i<sizeof($routes);$i++)
+		fwrite($tmp, sprintf("%s\n", $routes[$i]));
+
+	fclose($tmp);
+
+	/* Aggregate the route file with an external tool */
+	status(STATUS_NOTICE, "Aggregating routes.");
+	if (!file_exists($cfg['tools']['aggregate']) || !is_executable($cfg['tools']['aggregate'])) {
+		status(STATUS_ERROR, "Can not open aggregate tool, aborting.");
+		exit(1);
+	}
+
+	$cmd = "{$cfg['tools']['aggregate']} -q {$cfg['aggregate']['params']} < {$tmpname}";
+	system($cmd);
+
+	unlink($tmpname);
+}
+
+?>

@@ -1,0 +1,105 @@
+#!/usr/local/bin/php
+<?php
+
+$currentpath = dirname(realpath(__FILE__));
+require("{$currentpath}/../conf/irrpt.conf");
+require("{$currentpath}/../inc/pfxlist.inc");
+require("{$currentpath}/../inc/status.inc");
+
+/* Load our defaults from the master config file */
+$o_pfxstr	= $cfg['pfxgen']['default_pfxstr'];
+$o_pfxlen	= $cfg['pfxgen']['default_pfxlen'];
+$o_format	= $cfg['pfxgen']['default_format'];
+
+
+function usage($progname)
+{
+	global $o_pfxstr;
+	global $o_pfxlen;
+	global $o_format;
+
+	printf("Usage: %s [-h] [-p pfxstr] [-l pfxlength] [-f format] <asn>\n",
+		$progname);
+	printf("  pfxstr    - The prefix-list name format string (default: %s)\n", $o_pfxstr);
+	printf("  pfxlength - The max length more-specific that will be allowed (default: %s)\n", $o_pfxlen);
+	printf("  format    - The output format for a specific router type (default: %s)\n", $o_format);
+	printf("              Currently supported values are:\n");
+	printf("              cisco\n");
+	printf("              extreme\n");
+	printf("              foundry\n");
+	printf("              force10\n");
+	printf("              juniper\n");
+	exit(1);
+}
+
+
+/* Parse through the cmdline options. */
+for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
+	if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
+		break;
+
+	switch($_SERVER['argv'][$offset]) {
+	    case "-h":
+	    case "--help":
+		usage($_SERVER['argv'][0]);
+
+	    case "-p":
+	    case "--pfxstr":
+                $o_pfxstr = $_SERVER['argv'][++$offset];
+		break;
+
+	    case "-l":
+	    case "--pfxlength":
+                $o_pfxlength = $_SERVER['argv'][++$offset];
+		break;
+
+	    case "-f":
+	    case "--format":
+                switch (strtolower($_SERVER['argv'][++$offset])) {
+		    case "cisco":
+		    case "csco":
+		    case "foundry":
+		    case "fdry":
+			$o_format = "cisco";
+			break;
+
+		    case "juniper":
+		    case "jnpr":
+			$o_format = "juniper";
+			break;
+
+		    case "extreme":
+		    case "extr":
+			$o_format = "extreme";
+			break;
+
+		    case "force10":
+		    case "f10":
+			$o_format = "force10";
+			break;
+
+		    default:
+			printf("Unknown format, aborting.\n");
+			exit(1);
+		}
+
+		break;
+
+	}
+}
+
+/* Check for minimum number of args after cmdline */
+if (($_SERVER['argc'] - $offset) < 1)
+	usage($_SERVER['argv'][0]);
+
+$asn = $_SERVER['argv'][$offset+0];
+
+
+
+
+if (pfxlist_generate($o_format, $asn, $o_pfxstr, $o_pfxlen) < 0) {
+	printf("Error generating prefix-list, aborting.\n");
+	exit(1);
+}
+
+?>
