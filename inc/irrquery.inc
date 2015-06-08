@@ -7,277 +7,285 @@
  *  IRRToolSet out of the box. :)
  */
 class IRRQuery {
-	var $host;
-	var $port;
-	var $fp;
+  var $host;
+  var $port;
+  var $fp;
 
         var $caching;
-	var $cache;
+  var $cache;
 
-	var $lastcommand;
+  var $lastcommand;
 
-	function _multi_mode()
-	{
-		$this->_send("!!\n");
+  function __construct()
+  {
+    $this->caching = FALSE;
+  }
 
-		return TRUE;
-	}
+  function _multi_mode()
+  {
+    $this->_send("!!\n");
 
-	function _identify()
-	{
-		$this->_send("!nIRRPowerTools\n");
-		$this->_response();
+    return TRUE;
+  }
 
-		return TRUE;
-	}
+  function _identify()
+  {
+    $this->_send("!nIRRPowerTools\n");
+    $this->_response();
 
-	function _send($output)
-	{
-		$this->lastcommand = rtrim($output);
+    return TRUE;
+  }
 
-		if (fwrite($this->fp, $output) == FALSE) {
-			status(STATUS_ERROR, "IRR Query - Unexpected write() error on socket.");
-			return FALSE;
-		}
+  function _send($output)
+  {
+    $this->lastcommand = rtrim($output);
 
-		return TRUE;
-	}
+    if (fwrite($this->fp, $output) == FALSE) {
+      status(STATUS_ERROR, "IRR Query - Unexpected write() error on socket.");
+      return FALSE;
+    }
 
-	function _readline()
-	{
-		if (($data = fgets($this->fp, 256)) == FALSE) {
-			status(STATUS_ERROR, "IRR Query - Unexpected read() error on socket.");
-			return FALSE;
-		}
+    return TRUE;
+  }
 
-		return $data;
-	}
+  function _readline()
+  {
+    if (($data = fgets($this->fp, 256)) == FALSE) {
+      status(STATUS_ERROR, "IRR Query - Unexpected read() error on socket.");
+      return FALSE;
+    }
 
-	function _response()
-	{
-		$data = "";
-		$datalen = 0;
+    return $data;
+  }
 
-		$header = rtrim($this->_readline());
+  function _response()
+  {
+    $data = "";
+    $datalen = 0;
 
-		switch ($header[0]) {
-		    case "C":
-			return TRUE;
-		    case "D":
-			status(STATUS_WARNING, "IRR Query - key not found - Query: " . $this->lastcommand);
-			return FALSE;
-		    case "E":
-			return TRUE;
-		    case "F":
-			status(STATUS_WARNING, "Query ({$this->lastcommand}) failed:" . substr($header, 1));
-			return FALSE;
-		}
+    $header = rtrim($this->_readline());
 
-		$header = rtrim($header);
+    switch ($header[0]) {
+        case "C":
+      return TRUE;
+        case "D":
+      status(STATUS_WARNING, "IRR Query - key not found - Query: " . $this->lastcommand);
+      return FALSE;
+        case "E":
+      return TRUE;
+        case "F":
+      status(STATUS_WARNING, "Query ({$this->lastcommand}) failed:" . substr($header, 1));
+      return FALSE;
+    }
 
-		if ($header[0] == 'A')
-			$datalen = intval(substr($header,1));
-		else {
-			status(STATUS_ERROR, "IRR Query - Parse error looking for data length.");
-			return FALSE;
-		}
+    $header = rtrim($header);
 
-		while (strlen($data) < $datalen)
-			$data .= $this->_readline();
+    if ($header[0] == 'A')
+      $datalen = intval(substr($header,1));
+    else {
+      status(STATUS_ERROR, "IRR Query - Parse error looking for data length.");
+      return FALSE;
+    }
 
-		if ($datalen != strlen($data))
-			status(STATUS_ERROR, "IRR Query - Data read doesn't match expected length.");
+    while (strlen($data) < $datalen)
+      $data .= $this->_readline();
 
-		$footer = $this->_readline();
+    if ($datalen != strlen($data))
+      status(STATUS_ERROR, "IRR Query - Data read doesn't match expected length.");
 
-		return rtrim($data);
-	}
+    $footer = $this->_readline();
 
-	/*
+    return rtrim($data);
+  }
+
+  /*
          * Not sure why this is a good idea, but IRR still lets people register
          * classful routes with no /prefixlength. Scan for this and fix it.
          */
-	function _classful_fix($routes)
-	{
-		for($i=0;$i<sizeof($routes);$i++) {
-			if (strrpos($routes[$i], "/") == FALSE) {
-				$octets = explode(".", $routes[$i]);
-				$first = intval($octets[0]);
+  function _classful_fix($routes)
+  {
+    for ($i=0;$i<sizeof($routes);$i++) {
+      if (strrpos($routes[$i], "/") == FALSE) {
+        $octets = explode(".", $routes[$i]);
+        $first = intval($octets[0]);
 
-				if (($first) > 0 && ($first < 128))
-					$length = "/8";
-				else if (($first) > 0 && ($first < 192))
-					$length = "/16";
-				else if (($first) > 0 && ($first < 255))
-					$length = "/24";
-				else {
-					status(STATUS_ERROR, "Invalid prefix: {$routes[$i]}");
-					unset($routes[$i]);
-				}
+        if (($first) > 0 && ($first < 128))
+          $length = "/8";
+        else if (($first) > 0 && ($first < 192))
+          $length = "/16";
+        else if (($first) > 0 && ($first < 255))
+          $length = "/24";
+        else {
+          status(STATUS_ERROR, "Invalid prefix: {$routes[$i]}");
+          unset($routes[$i]);
+        }
 
-				$routes[$i] .= $length;
-			}
-		}
+        $routes[$i] .= $length;
+      }
+    }
 
-		return $routes;
-	}
+    return $routes;
+  }
 
-	function connect($host, $port)
-	{
-		$this->host = $host;
-		$this->port = $port;
+  function connect($host, $port)
+  {
+    $this->host = $host;
+    $this->port = $port;
 
-		$this->fp = fsockopen($host, $port, $errno, $errstr, 30);
+    $this->fp = fsockopen($host, $port, $errno, $errstr, 30);
 
-		if (!$this->fp) {
-			status_error(STATUS_ERROR, "{$errstr} ({$errno})");
-			return FALSE;
-		}
+    if (!$this->fp) {
+      status_error(STATUS_ERROR, "{$errstr} ({$errno})");
+      return FALSE;
+    }
 
-		$this->_multi_mode();
-		$this->_identify();
+    $this->_multi_mode();
+    $this->_identify();
 
-		return $this;
-	}
+    return $this;
+  }
 
-	function close()
-	{
-		$this->_send("!q\n");
+  function close()
+  {
+    $this->_send("!q\n");
 
-		fclose($this->fp);
-	}
+    fclose($this->fp);
+  }
 
-	function set_sources($sources)
-	{
-		$this->_send("!s-{$sources}\n");
+  function set_sources($sources)
+  {
+    $this->_send("!s-{$sources}\n");
 
-		if (($results = $this->_response()) == FALSE) {
-			return FALSE;
-		}
+    if (($results = $this->_response()) == FALSE) {
+      return FALSE;
+    }
 
-		return explode(" ", $results);
-	}
+    return explode(" ", $results);
+  }
 
-	function get_sources()
-	{
-		$this->_send("!s-lc\n");
+  function get_sources()
+  {
+    $this->_send("!s-lc\n");
 
-		if (($results = $this->_response()) == FALSE) {
-			return FALSE;
-		}
+    if (($results = $this->_response()) == FALSE) {
+      return FALSE;
+    }
 
-		return $results;
-	}
+    return $results;
+  }
 
-	function cache_set($mode)
-	{
-		if ($mode) {
-			$this->caching = 1;
-		} else {
-			$this->caching = 0;
-		}
-	}
+  function cache_set($mode)
+  {
+    if ($mode) {
+      $this->caching = TRUE;
+    } else {
+      $this->caching = FALSE;
+    }
+  }
 
-	function cache_clear()
-	{
-		unset($this->cache);
-	}
+  function cache_clear()
+  {
+    unset($this->cache);
+  }
 
 
-	function _cache_query($type, $record)
-	{
-		if ($this->caching) {
-			if (isset($this->cache[$type][$record])) {
-				/* printf("Cache hit: %s\n", $record); */
-				$this->cache[$type][$record]['hits']++;
+  function _cache_query($type, $record)
+  {
+    if ($this->caching) {
+      if (isset($this->cache[$type][$record])) {
+        /* printf("Cache hit: %s\n", $record); */
+        $this->cache[$type][$record]['hits']++;
 
-				return $this->cache[$type][$record]['data'];
-			}
-		}
+        return $this->cache[$type][$record]['data'];
+      }
+    }
 
-		return FALSE;
-	}
+    return FALSE;
+  }
 
-	function _cache_add($type, $record, $data)
-	{
-		if ($this->caching) {
-			$this->cache[$type][$record]['data'] = $data;
-			$this->cache[$type][$record]['time'] = time();
-			$this->cache[$type][$record]['hits'] = 0;
-		}
-	}
+  function _cache_add($type, $record, $data)
+  {
+    $this->cache[$type][$record]['data'] = $data;
+    $this->cache[$type][$record]['time'] = time();
+    $this->cache[$type][$record]['hits'] = 0;
+  }
 
-	function get_routes_by_origin($origin)
-	{
-		if (($results = $this->_cache_query("origin", $origin)) != FALSE)
-			return $results;
+  function get_routes_by_origin($origin)
+  {
+    if (($results = $this->_cache_query("origin", $origin)) != FALSE)
+      return $results;
 
-		$this->_send("!g{$origin}\n");
+    $this->_send("!g{$origin}\n");
 
-		if (($results = $this->_response()) == FALSE)
-			return FALSE;
+    if (($results = $this->_response()) == FALSE)
+      return FALSE;
 
-		$results = $this->_classful_fix(explode(" ", $results));
+    $results = $this->_classful_fix(explode(" ", $results));
 
-		natsort($results);
-		$results = array_values(array_unique($results));
+    natsort($results);
+    $results = array_values(array_unique($results));
 
-		$this->_cache_add("origin", $origin, $results);
+    if ($this->caching)
+      $this->_cache_add("origin", $origin, $results);
 
-		return $results;
-	}
+    return $results;
+  }
 
-	function get_data_by_set($set)
-	{
-		$routes = array();
+  function get_data_by_set($set)
+  {
+    $routes = array();
+    $stats['missing_autnum']  = 0;
 
-		/* XXX - This should be caching results, maybe? */
+    /* XXX - This should be caching results, maybe? */
 
-		/* Query the set data */
-		$this->_send("!i{$set},1\n");
-		if (($response = $this->_response()) == FALSE)
-			return FALSE;
-		$autnumlist = explode(" ", $response);
+    /* Query the set data */
+    $this->_send("!i{$set},1\n");
+    if (($response = $this->_response()) == FALSE)
+      return FALSE;
+    $autnumlist = explode(" ", $response);
 
-		/* Detect route-set's, otherwise assume as-set or autnum */
-		if ((strchr($response, '.') != FALSE) && (stristr($response, "AS") == FALSE)) {
-			$routes = $this->_classful_fix($autnumlist);
-		} else {
-			for($i=0;$i<sizeof($autnumlist);$i++) {
-				$results = $this->get_routes_by_origin($autnumlist[$i]);
+    /* Detect route-set, otherwise assume as-set or autnum */
+    if ((strchr($response, '.') != FALSE) && (stristr($response, "AS") == FALSE)) {
+      $routes = $this->_classful_fix($autnumlist);
+    } else {
+      for ($i = 0; $i < sizeof($autnumlist); $i++) {
+        $results = $this->get_routes_by_origin($autnumlist[$i]);
 
-				if ($results == FALSE)
-					continue;
+        if ($results == FALSE) {
+          $stats['missing_autnum']++;
+          continue;
+        }
 
-				$routes = array_merge($routes, $results);
-			}
-		}
-		natsort($routes);
+        $routes = array_merge($routes, $results);
+      }
+    }
+    natsort($routes);
 
-		$results['routes'] = array_values(array_unique($routes));
-		$results['asns']   = array_values(array_unique($autnumlist));
+    $results['routes'] = array_values(array_unique($routes));
+    $results['asns']   = array_values(array_unique($autnumlist));
+    $results['stats']  = $stats;
 
-		return $results;
-	}
+    return $results;
+  }
 
-	function get_members_by_set($set, $recursive)
-	{
-		$routes = array();
+  function get_members_by_set($set, $recursive)
+  {
+    $routes = array();
 
-		/* Query the set data */
-		if ($recursive == TRUE)
-			$this->_send("!i{$set},1\n");
-		else
-			$this->_send("!i{$set}\n");
+    /* Query the set data */
+    if ($recursive == TRUE)
+      $this->_send("!i{$set},1\n");
+    else
+      $this->_send("!i{$set}\n");
 
-		if (($response = $this->_response()) == FALSE)
-			return FALSE;
+    if (($response = $this->_response()) == FALSE)
+      return FALSE;
 
-		$data = explode(" ", $response);
+    $data = explode(" ", $response);
 
-		$data = array_values(array_unique($data));
-		return $data;
-	}
+    $data = array_values(array_unique($data));
+    return $data;
+  }
 }
 
 ?>
