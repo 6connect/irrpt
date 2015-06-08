@@ -1,3 +1,8 @@
+1.28 - June 8 2015
+
+ * Making this version compatible with TORIX changes, such as: -q quiet
+   mode, timezone support and memory limit support
+
 1.27 - Feb 8 2008
 
  * Redesigned (and simplified) the CVS diff code. The options are now 

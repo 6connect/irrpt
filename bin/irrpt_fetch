@@ -110,7 +110,12 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 
 if (isset($_SERVER['argv'][$offset+0]))
 	$o_asn = intval($_SERVER['argv'][$offset+0]);
-        
+
+/* Set Timezone */
+date_default_timezone_set($cfg['global']['timezone']);
+
+/* Set Memory Limit */
+ini_set("memory_limit",$cfg['global']['memory_limit']);
 
 /* Open the file with the list of IRR objects we will be tracking */
 if (!($irrdb = fopen($cfg['cfgfiles']['irrdb_list'], "r"))) {
