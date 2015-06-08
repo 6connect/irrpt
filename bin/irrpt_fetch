@@ -95,9 +95,12 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 	switch($_SERVER['argv'][$offset]) {
 	    case "-h":
 	    case "--help":
-		printf("Usage: %s [-hv] [asn]\n", $_SERVER['argv'][0]);
+		printf("Usage: %s [-hqv] [asn]\n", $_SERVER['argv'][0]);
 		exit(1);
-
+	    case "-q":
+	    case "--quiet":
+		$o_quiet = 1;
+		break;
 	    case "-v":
 	    case "--verbose":
 		$o_verbose = 1;
@@ -144,12 +147,13 @@ while (!feof($irrdb)) {
 	$email		= $results[2];
 
 	/* Skip invalid ASNs, or ASNs we aren't interested in */
-	if (($asn < 1) || ($asn > 64512) || ($o_asn && ($asn != $o_asn)))
+	if (($asn < 1) || (($asn > 64512) && ($asn < 131072))|| ($o_asn && ($asn != $o_asn)))
 		continue;
 
 	$count++;
 
-	status(STATUS_INFO, "Processing AS{$asn} (Record {$count})");
+	if( $o_quiet == 0 )
+		status(STATUS_INFO, "Processing AS{$asn} (Record {$count})");
 
 	/* Figure out if we have an AUT-NUM or an AS-SET, and resolve it */
 	status(STATUS_NOTICE, "Querying IRR Object {$object}");
@@ -226,7 +230,10 @@ while (!feof($irrdb)) {
 	}
 }
 
-status(STATUS_INFO, "Completed processing of {$count} IRR object(s).");
+if( $o_quiet == 1 )
+{
+    status(STATUS_INFO, "Completed processing of {$count} IRR object(s).");
+}
 
 fclose($irrdb); 
 
