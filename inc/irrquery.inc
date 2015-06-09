@@ -212,23 +212,52 @@ class IRRQuery {
 
   function get_routes_by_origin($origin)
   {
+    /* Anything cached? */
+
     if (($results = $this->_cache_query("origin", $origin)) != FALSE)
       return $results;
 
+    /* Get v4 prefixes */
+
     $this->_send("!g{$origin}\n");
-
     if (($results = $this->_response()) == FALSE)
+    {
       return FALSE;
+    }
 
-    $results = $this->_classful_fix(explode(" ", $results));
+    else 
+    {
+      $results = $this->_classful_fix(explode(" ", $results));
 
-    natsort($results);
-    $results = array_values(array_unique($results));
+      natsort($results);
+      $results = array_values(array_unique($results));
 
-    if ($this->caching)
-      $this->_cache_add("origin", $origin, $results);
+      if ($this->caching)
+        $this->_cache_add("origin", $origin, $results);
+    }
 
-    return $results;
+    /* Get v6 prefixes */
+
+    $this->_send("!6{$origin}\n");
+
+    if (($results6 = $this->_response()) == FALSE)
+    {
+      return FALSE;
+    }
+
+    else
+    {
+      $results6 = explode(" ", $results6);
+
+      natsort($results6);
+      $results6 = array_values(array_unique($results6));
+
+      if ($this->caching)
+        $this->_cache_add("origin", $origin, $results6);
+
+    }
+
+    return array_merge($results, $results6);
   }
 
   function get_data_by_set($set)
@@ -286,6 +315,7 @@ class IRRQuery {
     $data = array_values(array_unique($data));
     return $data;
   }
+
 }
 
 ?>
