@@ -66,16 +66,16 @@ class IRRQuery {
     $header = rtrim($this->_readline());
 
     switch ($header[0]) {
-        case "C":
-      return TRUE;
-        case "D":
-      status(STATUS_WARNING, "IRR Query - key not found - Query: " . $this->lastcommand);
-      return FALSE;
-        case "E":
-      return TRUE;
-        case "F":
-      status(STATUS_WARNING, "Query ({$this->lastcommand}) failed:" . substr($header, 1));
-      return FALSE;
+      case "C":
+        return TRUE;
+      case "D":
+        status(STATUS_WARNING, "IRR Query - key not found - Query: " . $this->lastcommand);
+        return FALSE;
+      case "E":
+        return TRUE;
+      case "F":
+        status(STATUS_WARNING, "Query ({$this->lastcommand}) failed:" . substr($header, 1));
+        return FALSE;
     }
 
     $header = rtrim($header);
