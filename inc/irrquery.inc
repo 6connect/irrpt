@@ -11,7 +11,7 @@ class IRRQuery {
   var $port;
   var $fp;
 
-        var $caching;
+  var $caching;
   var $cache;
 
   var $lastcommand;
@@ -99,9 +99,9 @@ class IRRQuery {
   }
 
   /*
-         * Not sure why this is a good idea, but IRR still lets people register
-         * classful routes with no /prefixlength. Scan for this and fix it.
-         */
+  * Not sure why this is a good idea, but IRR still lets people register
+  * classful routes with no /prefixlength. Scan for this and fix it.
+  */
   function _classful_fix($routes)
   {
     for ($i=0;$i<sizeof($routes);$i++) {
