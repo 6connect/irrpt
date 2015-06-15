@@ -20,18 +20,14 @@ Project Goals: IRR PowerTools 2.0
   customer and BGP session database which will probably not easily speak 
   to our code. This needs more work.
 
-* Add support for IPv6 (queries, aggregation, filtering, and deployment).
-
-* Integrate aggregate tool functionality to remove external dependancies,
-  as well as to add IPv6 support.
+* Integrate aggregate tool functionality to remove external dependancies.
 
 * Optimize code to reasonably support the automated and frequent 
   (e.g. hourly) polling and deployment of hundreds or thousands of prefix 
   lists. Optimize configuration deployment to pack multiple customers and 
   BGP session updates onto a single router update.
 
-* Add support for the RIPE-style (BIRD protocol) WHOIS queries (necessary 
-  for querying IPv6 route6 objects).
+* Add support for the RIPE-style (BIRD protocol) WHOIS queris. 
 
 * Add support for automatic updating of bogon list from Cymru.
 

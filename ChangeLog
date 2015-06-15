@@ -1,6 +1,7 @@
 1.29 - 
 
- * Added v6 support... wip 
+ * Added v6 support to IRR query, to prefix exclusion via 
+   exclusions.conf, 
 
 1.28 - June 8 2015
 
