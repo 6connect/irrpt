@@ -97,13 +97,15 @@ function exclusions_filter($file, $routes)
         /* First we will convert both v6 addresses into bin form */
         $a = current( unpack( "A16", inet_pton( $pfx_a[0] ) ) );
         $b = current( unpack( "A16", inet_pton( $pfx_b[0] ) ) );
-        /* As well as the exploded netmask for the prefix that is supposed to be excluded */
-        /* That's the netmask we are interested in, since also smaller prefixes aren't supposed to be used */
+        /* We also convert the exploded netmask for the prefix that will be excluded (b) */
         $mask = current( unpack( "A16", inet_pton( _netmask_v6($pfx_b[1]) ) ) );
-        /* We then apply the bitmask and reverse the binary conversion to a printable string */
+        /* That's the netmask we are interested in, this and no smaller prefixes are used */
+
+        /* apply the bitmask and reverse the binary conversion to a printable string */
         /* Which gives us the network portion of the two v6 addresses */
         $a = inet_ntop( pack( "A16", $a & $mask ) );
         $b = inet_ntop( pack( "A16", $b & $mask) );
+
         /* If both of those are identical, we exclude the prefix */
         if ($a == $b) {
           status(STATUS_WARNING, "Excluded Route {$pfx_a[0]}/{$pfx_a[1]}");

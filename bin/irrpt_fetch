@@ -5,6 +5,7 @@ $currentpath = dirname(realpath(__FILE__));
 require("{$currentpath}/../conf/irrpt.conf");
 require("{$currentpath}/../inc/irrquery.inc");
 require("{$currentpath}/../inc/exclusions.inc");
+require("{$currentpath}/../inc/aggregate.inc");
 require("{$currentpath}/../inc/cvs.inc");
 require("{$currentpath}/../inc/status.inc");
 
@@ -199,17 +200,13 @@ while (!feof($irrdb)) {
 		fwrite($output, sprintf("%s\n", $routes[$i]));
 	fclose($output);
 
+  /* XXX */
 
 	/* Aggregate the route file with an external tool */
 	status(STATUS_NOTICE, "Aggregating routes.");
-	if (!file_exists($cfg['tools']['aggregate']) || !is_executable($cfg['tools']['aggregate'])) {
-		status(STATUS_ERROR, "Can not open aggregate tool, aborting.");
-		exit(1);
-	}
-	$cmd  = "{$cfg['tools']['aggregate']} -q {$cfg['aggregate']['params']}";
-	$cmd .= " < {$routefile} > {$aggfile}";
-	system($cmd);
+  $aggregated_routes = aggregate_routes($routefile, $aggfile);
 
+  /* XXX */
 
 	/* Perform CVS tracking, then send e-mail updates */
 	status(STATUS_NOTICE, "Tracking data in CVS.");
