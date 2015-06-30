@@ -23,15 +23,13 @@ some time, yet many ISPs (particularly outside of the European/RIPE
 region) have still not adopted it. There are a variety of reasons given, 
 but some of the most important ones include:
 
-1) The system is overly complicated, and lacks sufficient examples. End 
+1. The system is overly complicated, and lacks sufficient examples. End 
    users can not figure it out, which means another layer of support 
    structure must be added, or proxy registration must be implemented.
-
-2) A publicly accessable description of every import and export policy 
+2. A publicly accessable description of every import and export policy 
    to every transit, peer, and customer, is difficult to maintain, and 
    is not in the best business interests of many ISPs.
-
-3) There are no existing tools which provides registration change 
+3. There are no existing tools which provides registration change 
    tracking. Without this kind of tracking, there is not enough 
    accountability for prefix registrations, and router configuration 
    updates are difficult to manage.
@@ -88,18 +86,13 @@ operations:
     tracking off of the IRR, and store them locally. Inside the fetch
     process, the following steps are performed:
 
-    1) Query a IRR whois server for prefixes behind the IRR object.
-
-    2) Match prefixes (including more-specifics) against the Exclusions 
+    1. Query a IRR whois server for prefixes behind the IRR object.
+    2. Match prefixes (including more-specifics) against the Exclusions 
        list, which contains prefixes that can not be registered. 
-
-    3) Store the approved prefixes locally.
-
-    4) Run the prefixes through an aggregation tool to optimize them.
-
-    5) Track changes to both the raw and aggregated prefix lists via CVS.
-
-    6) When changes are detected, send out notification e-mails to 
+    3. Store the approved prefixes locally.
+    4. Run the prefixes through an aggregation tool to optimize them.
+    5. Track changes to both the raw and aggregated prefix lists via CVS.
+    6. When changes are detected, send out notification e-mails to 
        customers and optionally a local copy to your operations staff, 
        alerting everyone that the routing change has been successfully 
        processed.
@@ -122,13 +115,10 @@ operations:
     the aggregated data we have stored. Currently only the following 
     formats are supported, but it should be trivial to add new ones:
 
-    1) Cisco/Foundry format (and anyone else with a similar CLI)
-
-    2) Juniper format
-
-    3) Extreme format
-
-    4) Force10 format
+    1. Cisco/Foundry format (and anyone else with a similar CLI)
+    2. Juniper format
+    3. Extreme format
+    4. Force10 format
 
     These configs can then be deployed automatically using a variety of 
     existing tools. Some of these tools include:
@@ -271,11 +261,6 @@ easily make use of the system, there will hopefully be an increase in
 accurate and maintained data and a reduction in the need to pollute the 
 IRR with proxy-registered junk.
 
-
-Coming Soon
------------
-
-* See TODO file.
 
 Thanks
 ------
