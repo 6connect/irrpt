@@ -2,33 +2,6 @@
 
 $exclusions = Array();
 
-
-/* Helper functions */
-
-/* Create a v6 netmask from a subnet integer value */
-function _netmask_v6($int) {
-  $hosts = (128 - $int);
-  $networks = 128 - $hosts;
-
-  $_m = str_repeat("1", $networks).str_repeat("0", $hosts);
-
-  $_hexMask = null;
-  foreach( str_split( $_m, 4) as $segment){
-    $_hexMask .= base_convert( $segment, 2, 16);
-  }
-
-  $mask = substr(preg_replace("/([A-f0-9]{4})/", "$1:", $_hexMask), 0, -1);
-  return $mask;
-}
-
-/* Stupid check for v4 vs v6 */
-function _ip_version($txt) {
-  return strpos($txt, ":") === false ? 4 : 6;
-}
-
-
-/* Main exclusion function */
-
 /* AKA: Thou shalt not route here */
 function exclusions_filter($file, $routes)
 {
@@ -63,7 +36,7 @@ function exclusions_filter($file, $routes)
     return $routes; /* Nothing in the exclusions file */
 
   /* RAS: This is pretty darn nasty, but it gets the job done */
-  /* EJ: ...holy crap what did I get myself into... */
+  /* EJ: ...oh dear, what did I get myself into... */
 
   for($i=0;$i<sizeof($routes);$i++) {
     $pfx_a = explode("/", $routes[$i]);
@@ -83,30 +56,19 @@ function exclusions_filter($file, $routes)
         if ($a == $b) {
           status(STATUS_WARNING, "Excluded Route {$pfx_a[0]}/{$pfx_a[1]}");
           unset($routes[$i]);
+          
         }
       }
 
       /* Both prefixes need to be the same type, checking for v6 here... */
       elseif (_ip_version($pfx_a[0]) == '6' and _ip_version($pfx_b[0]) == '6')
       {
-        /* Now let's do this for v6... ugh */
-        /* Ok, after some noodling and inspiration from @mikemackintosh */
-        /* https://www.mikemackintosh.com/5-tips-for-working-with-ipv6-in-php/ */
-        /* this may be a way to do it... */
+       
+        /* apply the mask for prefix b on both, the current prefix and the one from the ecludes, to get the network portion  */ 
+        $a = _v6_to_network($pfx_a[0], $pfx_b[1] );
+        $b = _v6_to_network($pfx_b[0], $pfx_b[1]);
 
-        /* First we will convert both v6 addresses into bin form */
-        $a = current( unpack( "A16", inet_pton( $pfx_a[0] ) ) );
-        $b = current( unpack( "A16", inet_pton( $pfx_b[0] ) ) );
-        /* We also convert the exploded netmask for the prefix that will be excluded (b) */
-        $mask = current( unpack( "A16", inet_pton( _netmask_v6($pfx_b[1]) ) ) );
-        /* That's the netmask we are interested in, this and no smaller prefixes are used */
-
-        /* apply the bitmask and reverse the binary conversion to a printable string */
-        /* Which gives us the network portion of the two v6 addresses */
-        $a = inet_ntop( pack( "A16", $a & $mask ) );
-        $b = inet_ntop( pack( "A16", $b & $mask) );
-
-        /* If both of those are identical, we exclude the prefix */
+        /* If both are identical, so the current prefix fits into the to be excluded one, we take the route out */
         if ($a == $b) {
           status(STATUS_WARNING, "Excluded Route {$pfx_a[0]}/{$pfx_a[1]}");
           unset($routes[$i]);
@@ -120,6 +82,7 @@ function exclusions_filter($file, $routes)
     }
   }
 
+  /* reindex array and return */
   return array_values($routes);
 }
 

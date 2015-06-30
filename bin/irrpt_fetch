@@ -8,6 +8,7 @@ require("{$currentpath}/../inc/exclusions.inc");
 require("{$currentpath}/../inc/aggregate.inc");
 require("{$currentpath}/../inc/cvs.inc");
 require("{$currentpath}/../inc/status.inc");
+require("{$currentpath}/../inc/ipv6.inc");
 
 
 $o_asn		= 0;			/* Default ASN to fetch: all */
