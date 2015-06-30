@@ -1,8 +1,8 @@
 # IRR Power Tools
 
-Written by Richard A Steenbergen <ras@e-gerbil.net>
-
-IPv6 support added by Elisa Jasinska <elisa@bigwaveit.org>
+Originally written by Richard A Steenbergen <ras@e-gerbil.net>.
+Older versions can be found on [sourceforge]( http://sourceforge.net/projects/irrpt/).
+IPv6 support added by Elisa Jasinska <elisa@bigwaveit.org>.
 
 Summary
 -------
