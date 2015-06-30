@@ -4,13 +4,14 @@
 $currentpath = dirname(realpath(__FILE__));
 require("{$currentpath}/../conf/irrpt.conf");
 require("{$currentpath}/../inc/pfxlist.inc");
+require("{$currentpath}/../inc/ipv6.inc");
 require("{$currentpath}/../inc/status.inc");
 
 /* Load our defaults from the master config file */
-$o_pfxstr	= $cfg['pfxgen']['default_pfxstr'];
-$o_pfxlen	= $cfg['pfxgen']['default_pfxlen'];
-$o_pfxlen	= $cfg['pfxgen']['default_pfxlen_v6'];
-$o_format	= $cfg['pfxgen']['default_format'];
+$o_pfxstr	    = $cfg['pfxgen']['default_pfxstr'];
+$o_pfxlen	    = $cfg['pfxgen']['default_pfxlen'];
+$o_pfxlen_v6	= $cfg['pfxgen']['default_pfxlen_v6'];
+$o_format	    = $cfg['pfxgen']['default_format'];
 
 
 function usage($progname)

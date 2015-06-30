@@ -201,13 +201,9 @@ while (!feof($irrdb)) {
 		fwrite($output, sprintf("%s\n", $routes[$i]));
 	fclose($output);
 
-  /* XXX */
-
-	/* Aggregate the route file with an external tool */
+	/* Aggregate the route file */
 	status(STATUS_NOTICE, "Aggregating routes.");
   $aggregated_routes = aggregate_routes($routefile, $aggfile);
-
-  /* XXX */
 
 	/* Perform CVS tracking, then send e-mail updates */
 	status(STATUS_NOTICE, "Tracking data in CVS.");

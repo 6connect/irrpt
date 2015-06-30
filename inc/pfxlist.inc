@@ -89,7 +89,7 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 		if (!($line = rtrim(fgets($pfxfile, 64))))
 			continue;
 
-		$prefix = explode("/", $line);
+		$prefix = explode("/", rtrim($line));
 
 	        printf("ip prefix-list %s permit %s/%d", $pfxname, $prefix[0],
 			$prefix[1]);
@@ -97,17 +97,14 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
     if (_ip_version($line) == '4')
     {
 		  if ($prefix[1] < $pfxlen)
-			  printf(" le %s\n", $pfxlen);
+			  printf(" le %s", $pfxlen);
     }
     elseif (_ip_version($line) == '6')
     {
       if ($prefix[1] < $pfxlen_v6)
-        printf(" le %s\n", $pfxlen_v6);
+        printf(" le %s", $pfxlen_v6);
     }
-		else    
-    {
-			printf("\n");
-    }
+		printf("\n");
 	}
 
 	printf("end\n");
@@ -131,23 +128,31 @@ function pfxlist_generate_extreme($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 		if (!($line = rtrim(fgets($pfxfile, 64))))
 			continue;
 
-		$prefix = explode("/", $line);
+		$prefix = explode("/", rtrim($line));
 
 		printf("configure access-profile %s add %d permit ipaddress %s/%d", $pfxname, $counter += 10, $prefix[0], $prefix[1]);
 
     if (_ip_version($line) == '4')
     {
 		  if ($prefix[1] < $pfxlen)
+      {
 			  printf("\n", $pfxlen);
+      }
+      else
+      {
+	      printf(" exact\n");
+      }
     }
     elseif (_ip_version($line) == '6')
     {
 		  if ($prefix[1] < $pfxlen_v6)
+      {
 			  printf("\n", $pfxlen_v6);
-    }
-		else
-    {
-			printf(" exact\n");
+      }
+      else
+      {
+	      printf(" exact\n");
+      }
     }
 	}
 
@@ -169,7 +174,7 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 		if (!($line = rtrim(fgets($pfxfile, 64))))
 			continue;
 
-		$prefix = explode("/", $line);
+		$prefix = explode("/", rtrim($line));
 
 	        printf("%s permit %s/%d", $pfxname, $prefix[0],
 			$prefix[1]);
@@ -177,17 +182,14 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
     if (_ip_version($line) == '4')
     {
 		  if ($prefix[1] < $pfxlen)
-			  printf(" le %s\n", $pfxlen);
+			  printf(" le %s", $pfxlen);
     }
     elseif (_ip_version($line) == '6')
     {
 		  if ($prefix[1] < $pfxlen_v6)
-			  printf(" le %s\n", $pfxlen_v6);
+			  printf(" le %s", $pfxlen_v6);
     }
-		else
-    {    
-			printf("\n");
-    }
+	  printf("\n");
 	}
 
 	printf("end\n");

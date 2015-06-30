@@ -9,6 +9,7 @@ function aggregate_routes($routefile, $aggfile)
   global $cfg;
 
   /* normalize and sort addresses and store in array */
+  status(STATUS_NOTICE, "Aggregating routes - sorting...");
   $addresses = file($routefile);
   for ($i = 0; $i < count($addresses); $i++)
   {  
@@ -25,6 +26,7 @@ function aggregate_routes($routefile, $aggfile)
   $addresses = array_values($addresses);
 
   /* eliminate overlapping prefixes */
+  status(STATUS_NOTICE, "Aggregating routes - eliminating overlapping prefixes...");
   $count = count($addresses);
   $current = explode("/", rtrim($addresses[0]));
   for ($i = 1; $i < $count; $i++)
@@ -78,6 +80,7 @@ function aggregate_routes($routefile, $aggfile)
   $addresses = array_values($addresses);
 
   /* aggregate neighboring prefixes until nothing changes anymore */
+  status(STATUS_NOTICE, "Aggregating routes - aggregating neighboring prefixes...");
   $changes = 1;
   while ($changes == 1)
   {
@@ -106,8 +109,7 @@ function aggregate_routes($routefile, $aggfile)
           $new_prefox = $ip_a .  "/" . $new_mask;
           status(STATUS_WARNING, "Aggregating {$current[0]}/{$current[1]} and {$next[0]}/{$next[1]} into {$new_prefix}");
           unset($addresses[$i - 1]);
-          unset($addresses[$i]);
-#          $addresses[$i] = $new; 
+          $addresses[$i] = "{$new_prefix}\n"; 
           $changes = 1;
         }
         else 
@@ -127,8 +129,7 @@ function aggregate_routes($routefile, $aggfile)
           $new_prefix = $a .  "/" . $new_mask;
           status(STATUS_WARNING, "Aggregating {$current[0]}/{$current[1]} and {$next[0]}/{$next[1]} into {$new_prefix}");
           unset($addresses[$i - 1]);
-          unset($addresses[$i]);
- #         $addresses[$i] = $new;
+          $addresses[$i] = "{$new_prefix}\n"; 
           $changes = 1;
         }
         else 
@@ -147,9 +148,13 @@ function aggregate_routes($routefile, $aggfile)
   }
   
   /* print result to a file */
-  $afile = fopen($aggfile, "r")
+  $afile = fopen($aggfile, "w")
     or status(STATUS_ERROR, "Can not open agg route file, aborting.");
-  ##... write ...
+  $count = count($addresses);
+  for ($i = 1; $i < $count; $i++)
+  {
+    fwrite($afile, "$addresses[$i]");
+  }
   fclose($afile);
 }
 
