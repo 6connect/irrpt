@@ -6,8 +6,6 @@ require("{$currentpath}/../conf/irrpt.conf");
 require("{$currentpath}/../inc/irrquery.inc");
 require("{$currentpath}/../inc/status.inc");
 
-$o_verbose	= 0;	/* Default: verbose mode off */
-
 $irr		= new IRRQuery;	/* Open our IRRQuery class */
 $done		= array();
 
@@ -53,18 +51,13 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 	switch($_SERVER['argv'][$offset]) {
 	    case "-h":
 	    case "--help":
-		printf("Usage: %s [-hv] <object>\n", $_SERVER['argv'][0]);
+		printf("Usage: %s [-h] <object>\n", $_SERVER['argv'][0]);
 		exit(1);
-
-	    case "-v":
-	    case "--verbose":
-		$o_verbose = 1;
-		break;
 	}
 }
 
 if (($_SERVER['argc'] - $offset) < 1) {
-	printf("Usage: %s [-hv] <object>\n", $_SERVER['argv'][0]);
+	printf("Usage: %s [-h] <object>\n", $_SERVER['argv'][0]);
 	exit(1);
 }
 
