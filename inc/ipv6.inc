@@ -45,9 +45,6 @@ function _v6_to_network($pfx, $mask)
   $mask_bin = current( unpack( "A16", inet_pton( _v6_mask_int2bin($mask) ) ) );
   /* apply mask to prefix and reverse the binary conversion to a printable string to get the network portion*/
   $network = inet_ntop( pack( "A16", $pfx_bin & $mask_bin ) );
-  print $pfx_bin;
-  print $mask_bin;
-  print $network;
   return $network;
 }
 
