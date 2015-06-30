@@ -1,7 +1,7 @@
 # IRR Power Tools
 
 Written by Richard A Steenbergen <ras@e-gerbil.net>
-
+IPv6 support added by Elisa Jasinska <elisa@bigwaveit.org>
 
 Summary
 -------
@@ -67,13 +67,9 @@ will hopefully lead to more accurate data and a more effective system.
 Requirements
 ------------
 
-* Aggregate    >= 1.5     (ftp://ftp.isc.org/isc/aggregate/)
 * CVS                     (http://www.gnu.org/software/cvs/)
 * PHP          >= 4.3     (http://www.php.net/downloads.php)
 * CVSweb       Optional   (http://people.freebsd.org/~scop/cvsweb/)
-
-Note to Debian users: Your "aggregate" package is not the same as the one
-listed above.
 
 Note to FreeBSD users: If you are building from ports you probably want to 
 use PHP 5 and make certain that you have compiled the POSIX extension 
@@ -271,6 +267,6 @@ Coming Soon
 Thanks
 ------
 
-Joe Abley for the very useful aggregate tool, Chris Morrow for nagging me 
-into releasing this publicly, and all the folks in the ChangeLog who 
-helped pick out the bugs.
+Joe Abley for the very useful aggregate tool which was used in initial version, 
+Chris Morrow for nagging me into releasing this publicly, and all the folks in the 
+ChangeLog who helped pick out the bugs.

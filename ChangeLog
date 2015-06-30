@@ -1,7 +1,9 @@
-1.29 - 
+1.29 -  June 30 2015
 
+ * Implemented aggregate fntionality and removed dependency on the
+   external agregate tool
  * Added v6 support to IRR query, to prefix exclusion via 
-   exclusions.conf, 
+   exclusions.conf, aggregation and prefix generator
 
 1.28 - June 8 2015
 

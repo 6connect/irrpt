@@ -20,8 +20,6 @@ Project Goals: IRR PowerTools 2.0
   customer and BGP session database which will probably not easily speak 
   to our code. This needs more work.
 
-* Integrate aggregate tool functionality to remove external dependancies.
-
 * Optimize code to reasonably support the automated and frequent 
   (e.g. hourly) polling and deployment of hundreds or thousands of prefix 
   lists. Optimize configuration deployment to pack multiple customers and 
