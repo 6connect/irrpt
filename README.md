@@ -1,6 +1,7 @@
 # IRR Power Tools
 
 Written by Richard A Steenbergen <ras@e-gerbil.net>
+
 IPv6 support added by Elisa Jasinska <elisa@bigwaveit.org>
 
 Summary
@@ -88,11 +89,16 @@ operations:
     process, the following steps are performed:
 
     1) Query a IRR whois server for prefixes behind the IRR object.
+
     2) Match prefixes (including more-specifics) against the Exclusions 
        list, which contains prefixes that can not be registered. 
+
     3) Store the approved prefixes locally.
+
     4) Run the prefixes through an aggregation tool to optimize them.
+
     5) Track changes to both the raw and aggregated prefix lists via CVS.
+
     6) When changes are detected, send out notification e-mails to 
        customers and optionally a local copy to your operations staff, 
        alerting everyone that the routing change has been successfully 
@@ -117,8 +123,11 @@ operations:
     formats are supported, but it should be trivial to add new ones:
 
     1) Cisco/Foundry format (and anyone else with a similar CLI)
+
     2) Juniper format
+
     3) Extreme format
+
     4) Force10 format
 
     These configs can then be deployed automatically using a variety of 
@@ -208,6 +217,7 @@ FAQ
 ---
 
 Q) Why PHP? Why not Perl, or some other language?
+
 A) Simple. I don't normally write text processing scripts, so I don't 
    particularly care for or regularly use Perl. Since this most definitely 
    falls into the category of a text processing script, it would take much 
@@ -215,6 +225,7 @@ A) Simple. I don't normally write text processing scripts, so I don't
    close my eyes, hum real loudly, and pretend like I am writing C. :) 
 
 Q) Wouldn't this be more scalable if we stored our config and data in SQL? 
+
 A) Yes it would. However, the purpose of this project is to open up the
    world of automated IRR-based prefix-lists to every ISP. As such, it is 
    designed to be as simple as possible, with the fewest complex external 
@@ -224,12 +235,14 @@ A) Yes it would. However, the purpose of this project is to open up the
    worry about. :)
 
 Q) Does this tool support RPSLng?
+
 A) Not right now. We're making the basic assumption of IPv4 routes only, 
    especially in so far as the aggregate tool goes. This may change in 
    the future (see the TODO file). Feel free to let me know your strong 
    interest (or lack thereof) on this issue.
 
 Q) Does this tool generate AS-PATH filters?
+
 A) No. Please note that this is not intended as an end-all and be-all 
    RPSL tool, or a total replacement for a utility like IRRToolSet. For 
    example, this tool does not try to parse aut-num import/export policies,
