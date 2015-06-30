@@ -1,8 +1,8 @@
 # IRR Power Tools
 
 * Originally written by Richard A Steenbergen <ras@e-gerbil.net>
-* Older versions can be found on [sourceforge]( http://sourceforge.net/projects/irrpt/)
-* IPv6 support added by Elisa Jasinska <elisa@bigwaveit.org>
+* Older versions can be found on sourceforge at [http://sourceforge.net/projects/irrpt/](http://sourceforge.net/projects/irrpt/)
+* IPv6 support added by Elisa Jasinska <elisa@bigwaveit.org> for version 1.29 
 
 Summary
 -------
@@ -80,7 +80,18 @@ Documentation
 The operation of IRR PowerTools is broken down into the following distinct 
 operations:
 
-* Fetch
+* irrpt_fetch
+
+    ```
+    $  bin/irrpt_fetch -h
+    Usage: bin/irrpt_fetch [-hqv] [asn]
+
+    Quiet mode:
+    $ bin/irrpt_fetch -q 42
+
+    Verbose mode:
+    $ bin/irrpt_fetch -v 42
+    ```
 
     This is the stage where you pull data for the objects that you are 
     tracking off of the IRR, and store them locally. Inside the fetch
@@ -97,7 +108,12 @@ operations:
        alerting everyone that the routing change has been successfully 
        processed.
 
-* Nag
+* irrpt_nag
+
+    ```
+    $ bin/irrpt_nag -h
+    Usage: bin/irrpt_nag [-hp] [-c config] [-m message] <previous rev> <current rev>
+    ```
 
     In this stage, any transit providers (or other interested parties) 
     who still track prefix-list updates via e-mail rather than via IRR 
@@ -109,9 +125,34 @@ operations:
     prefix lists, so for the immediate future you will probably still be 
     getting a lot of use out of this tool.
 
-* Pfxgen
+* irrpt_pfxgen
 
-    This this stage, actual router configurations are generated based on 
+    ```
+    $ bin/irrpt_pfxgen -h
+    Usage: bin/irrpt_pfxgen [-h] [-p pfxstr] [-l pfxlength] [-l pfxlength_v6] [-f format] <asn>
+      pfxstr       - The prefix-list name format string (default: PEER:%d)
+      pfxlength    - The max length more-specific that will be allowed (default: 24)
+      pfxlength_v6 - The max length more-specific that will be allowed for v6 (default: 48)
+      format       - The output format for a specific router type (default: cisco)
+                     Currently supported values are:
+                     cisco
+                     extreme
+                     foundry
+                     force10
+                     juniper
+
+    Examples:
+    $ bin/irrpt_pfxgen -f cisco 42
+    ...
+    $ bin/irrpt_pfxgen -f juniper 42
+    ...
+    $ bin/irrpt_pfxgen -f extreme 42
+    ...
+    $ bin/irrpt_pfxgen -f force10 42
+    ...
+    ```
+
+    In this stage, actual router configurations are generated based on 
     the aggregated data we have stored. Currently only the following 
     formats are supported, but it should be trivial to add new ones:
 
@@ -151,6 +192,20 @@ operations:
     status data, not deploying configurations.
 
     Many other systems exist as well.
+
+* irrpt_eval
+
+    ```
+    $ bin/irrpt_eval -h
+    Usage: bin/irrpt_eval [-hva] <object>
+    ```
+
+* irrpt_explorer
+
+    ```
+    $ bin/irrpt_explorer -h
+    Usage: bin/irrpt_explorer [-hv] <object>
+    ```
 
 
 Instructions
@@ -261,10 +316,12 @@ easily make use of the system, there will hopefully be an increase in
 accurate and maintained data and a reduction in the need to pollute the 
 IRR with proxy-registered junk.
 
+More in the TODO file.
+
 
 Thanks
 ------
 
-Joe Abley for the very useful aggregate tool which was used in initial version, 
-Chris Morrow for nagging me into releasing this publicly, and all the folks in the 
-ChangeLog who helped pick out the bugs.
+Joe Abley for the very useful aggregate tool which was used in initial 
+versions, Chris Morrow for nagging me into releasing this publicly, and all 
+the folks in the ChangeLog who helped pick out the bugs.
