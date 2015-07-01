@@ -106,6 +106,12 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 	    case "-v":
 	    case "--verbose":
 		$o_verbose = 1;
+	    case "-4":
+	    case "--4":
+		$o_4 = 1;
+	    case "-6":
+	    case "--6":
+		$o_6 = 1;
 		break;
 	}
 }
@@ -164,17 +170,30 @@ while (!feof($irrdb)) {
 
 	/* Figure out if we have an AUT-NUM or an AS-SET, and resolve it */
 	status(STATUS_NOTICE, "Querying IRR Object {$object}");
-	if (($routes = $irr->get_routes_by_origin($object)) == FALSE) {
+  $routes = $irr->get_v4_routes_by_origin($object));
+  $routes6 = $irr->get_v6_routes_by_origin($object));
+
+	if (($routes == FALSE) 
+  {
 		$data = $irr->get_data_by_set($object);
 		$routes = $data['routes'];
+		$routes6 = $data['routes6'];
 		$asnlist = $data['asns'];
-	} else {
+	} 
+  else 
+  {
 		$asnlist[0] = $object;
 	}
 
 	/* Define the paths to our local data files */
 	$routefile = $cfg['paths']['db'] . $asn;
+	$routefile4 = $cfg['paths']['db'] . $asn . ".4";
+	$routefile6 = $cfg['paths']['db'] . $asn . ".6";
+
 	$aggfile = $routefile . $cfg['aggregate']['suffix'];
+	$aggfile4 = $routefile4 . $cfg['aggregate']['suffix'];
+	$aggfile6 = $routefile6 . $cfg['aggregate']['suffix'];
+
 	$asnfile = $routefile . $cfg['fetch']['asn_suffix'];
 
 	/* Log the ASNs behind this object, for future AS-PATH use */
@@ -190,27 +209,62 @@ while (!feof($irrdb)) {
 	/* Strip out excluded routes that can not be registered */
 	status(STATUS_NOTICE, "Filtering against excluded routes.");
 	$routes = exclusions_filter($cfg['cfgfiles']['exclusions'], $routes);
+	$routes6 = exclusions_filter($cfg['cfgfiles']['exclusions'], $routes6);
 
-	/* Write the routes we've just looked up into a file */
 	status(STATUS_NOTICE, "Writing routes to local database.");
+	/* Write the v4 routes we've just looked up into a file */
 	if (($output = fopen($routefile, "w")) == FALSE) {
 		status(STATUS_ERROR, "Can not open IRRDB output file for {$asn}, skipping this record.");
 		continue;
 	}
-	for($i=0;$i<sizeof($routes);$i++)
+	if (($output4 = fopen($routefile4, "w")) == FALSE) {
+		status(STATUS_ERROR, "Can not open IRRDB output file for {$asn}, skipping this record.");
+		continue;
+  }
+	if (($output6 = fopen($routefile6, "w")) == FALSE) {
+		status(STATUS_ERROR, "Can not open IRRDB output file for {$asn}, skipping this record.");
+		continue;
+  }
+
+	for($i = 0; $i < sizeof($routes); $i++)
+  {
 		fwrite($output, sprintf("%s\n", $routes[$i]));
+		fwrite($output4, sprintf("%s\n", $routes[$i]));
+  }
+	for($i = 0; $i < sizeof($routes6); $i++)
+  {
+		fwrite($output, sprintf("%s\n", $routes6[$i]));
+		fwrite($output6, sprintf("%s\n", $routes6[$i]));
+  }
+
 	fclose($output);
+	fclose($output4);
+	fclose($output6);
 
 	/* Aggregate the route file */
 	status(STATUS_NOTICE, "Aggregating routes.");
-  $aggregated_routes = aggregate_routes($routefile);
+  $aggregated_routes = aggregate_routes($routefile4);
+  $aggregated_routes6 = aggregate_routes($routefile6);
+
   /* print result to a file */
   $afile = fopen($aggfile, "w")
     or status(STATUS_ERROR, "Can not open agg route file, aborting.");
-  $count = count($aggregated_routes);
-  for ($i = 1; $i < $count; $i++)
+  $afile4 = fopen($aggfile4, "w")
+    or status(STATUS_ERROR, "Can not open agg route file, aborting.");
+  $afile6 = fopen($aggfile6, "w")
+    or status(STATUS_ERROR, "Can not open agg route file, aborting.");
+
+  for ($i = 1; $i < sizeof($aggregated_routes); $i++)
   {
     fwrite($afile, "$aggregated_routes[$i]");
+    fwrite($afile4, "$aggregated_routes[$i]");
+  }
+  fclose($afile);
+
+  for ($i = 1; $i < sizeof($aggregated_routes6); $i++)
+  {
+    fwrite($afile, "$aggregated_routes6[$i]");
+    fwrite($afile6, "$aggregated_routes6[$i]");
   }
   fclose($afile);
 
@@ -219,7 +273,11 @@ while (!feof($irrdb)) {
 	$cvs->init($cfg['paths']['cvsroot']);
 
 	$rev = track($routefile);
+	$rev = track($routefile4);
+	$rev = track($routefile6);
 	$rev = track($aggfile);
+	$rev = track($aggfile4);
+	$rev = track($aggfile6);
 
 	switch ($cfg['fetch']['emailonchange']) {
 	    case "both":

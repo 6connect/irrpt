@@ -210,7 +210,7 @@ class IRRQuery {
     $this->cache[$type][$record]['hits'] = 0;
   }
 
-  function get_routes_by_origin($origin)
+  function get_v4_routes_by_origin($origin)
   {
     /* Anything cached? */
 
@@ -235,35 +235,44 @@ class IRRQuery {
       if ($this->caching)
         $this->_cache_add("origin", $origin, $results);
     }
+  }
+
+  function get_v6_routes_by_origin($origin)
+  {
+    /* Anything cached? */
+
+    if (($results = $this->_cache_query("origin6", $origin)) != FALSE)
+      return $results;
 
     /* Get v6 prefixes */
 
     $this->_send("!6{$origin}\n");
-
-    if (($results6 = $this->_response()) == FALSE)
+    if (($results = $this->_response()) == FALSE)
     {
       return FALSE;
     }
 
-    else
+    else 
     {
-      $results6 = explode(" ", $results6);
+      $results = explode(" ", $results);
 
-      natsort($results6);
-      $results6 = array_values(array_unique($results6));
+      natsort($results);
+      $results = array_values(array_unique($results));
 
       if ($this->caching)
-        $this->_cache_add("origin", $origin, $results6);
-
+        $this->_cache_add("origin6", $origin, $results);
     }
 
-    return array_merge($results, $results6);
+    return $results;
   }
 
   function get_data_by_set($set)
   {
     $routes = array();
+    $routes6 = array();
+
     $stats['missing_autnum']  = 0;
+    $stats['missing_autnum_v6']  = 0;
 
     /* XXX - This should be caching results, maybe? */
 
@@ -276,21 +285,36 @@ class IRRQuery {
     /* Detect route-set, otherwise assume as-set or autnum */
     if ((strchr($response, '.') != FALSE) && (stristr($response, "AS") == FALSE)) {
       $routes = $this->_classful_fix($autnumlist);
-    } else {
-      for ($i = 0; $i < sizeof($autnumlist); $i++) {
-        $results = $this->get_routes_by_origin($autnumlist[$i]);
+    } 
+    else 
+    {
+      for ($i = 0; $i < sizeof($autnumlist); $i++) 
+      {
+        $results = $this->get_v4_routes_by_origin($autnumlist[$i]);
+        $results6 = $this->get_v6_routes_by_origin($autnumlist[$i]);
 
-        if ($results == FALSE) {
+        if ($results == FALSE) 
+        {
           $stats['missing_autnum']++;
           continue;
         }
+        if ($results6 == FALSE) 
+        {
+          $stats['missing_autnum_v6']++;
+          continue;
+        }
+
 
         $routes = array_merge($routes, $results);
+        $routes6 = $results6;
       }
     }
     natsort($routes);
+    natsort($routes6);
 
     $results['routes'] = array_values(array_unique($routes));
+    $results['routes6'] = array_values(array_unique($routes6));
+
     $results['asns']   = array_values(array_unique($autnumlist));
     $results['stats']  = $stats;
 
