@@ -160,9 +160,9 @@ formats are supported, but it should be trivial to add new ones:
 These configs can then be deployed automatically using a variety of 
 existing tools. Some of these tools include:
 
-JUNOScript         - http://www.juniper.net/support/junoscript/
-Net::Telnet::Cisco - http://NetTelnetCisco.sourceforge.net/
-RANCID             - http://www.shrubbery.net/rancid/
+* JUNOScript         - http://www.juniper.net/support/junoscript/
+* Net::Telnet::Cisco - http://NetTelnetCisco.sourceforge.net/
+* RANCID             - http://www.shrubbery.net/rancid/
 
 A few tidbits of examples are included in the "/example" directory.
 There are of course a wide variety of ways to deploy configurations 
