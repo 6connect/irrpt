@@ -80,7 +80,7 @@ Documentation
 The operation of IRR PowerTools is broken down into the following distinct 
 operations:
 
-* irrpt_fetch
+### irrpt_fetch
 
     ```
     $ bin/irrpt_fetch -h
@@ -110,7 +110,7 @@ operations:
        alerting everyone that the routing change has been successfully 
        processed.
 
-* irrpt_nag
+### irrpt_nag
 
     ```
     $ bin/irrpt_nag -h
@@ -127,7 +127,7 @@ operations:
     prefix lists, so for the immediate future you will probably still be 
     getting a lot of use out of this tool.
 
-* irrpt_pfxgen
+### irrpt_pfxgen
 
     ```
     $ bin/irrpt_pfxgen -h
@@ -195,7 +195,7 @@ operations:
 
     Many other systems exist as well.
 
-* irrpt_eval
+### irrpt_eval
 
     Show prefixes for a given AS-SET, in unaggregated or aggregated form.
 
@@ -223,7 +223,7 @@ operations:
     ```
 
 
-* irrpt_explorer
+### irrpt_explorer
 
     Expand AS-SETs into their member ASes.
 
