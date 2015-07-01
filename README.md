@@ -82,7 +82,6 @@ operations:
 
 ### irrpt_fetch
 
-    ```
     $ bin/irrpt_fetch -h
     Usage: bin/irrpt_fetch [-hqv] [asn]
 
@@ -93,43 +92,39 @@ operations:
     Verbose mode:
     $ bin/irrpt_fetch -v 42
     ...
-    ```
 
-    This is the stage where you pull data for the objects that you are 
-    tracking off of the IRR, and store them locally. Inside the fetch
-    process, the following steps are performed:
+This is the stage where you pull data for the objects that you are 
+tracking off of the IRR, and store them locally. Inside the fetch
+process, the following steps are performed:
 
-    1. Query a IRR whois server for prefixes behind the IRR object.
-    2. Match prefixes (including more-specifics) against the Exclusions 
-       list, which contains prefixes that can not be registered. 
-    3. Store the approved prefixes locally.
-    4. Run the prefixes through an aggregation tool to optimize them.
-    5. Track changes to both the raw and aggregated prefix lists via CVS.
-    6. When changes are detected, send out notification e-mails to 
-       customers and optionally a local copy to your operations staff, 
-       alerting everyone that the routing change has been successfully 
-       processed.
+1. Query a IRR whois server for prefixes behind the IRR object.
+2. Match prefixes (including more-specifics) against the Exclusions 
+   list, which contains prefixes that can not be registered. 
+3. Store the approved prefixes locally.
+4. Run the prefixes through an aggregation tool to optimize them.
+5. Track changes to both the raw and aggregated prefix lists via CVS.
+6. When changes are detected, send out notification e-mails to 
+   customers and optionally a local copy to your operations staff, 
+   alerting everyone that the routing change has been successfully 
+   processed.
 
 ### irrpt_nag
 
-    ```
     $ bin/irrpt_nag -h
     Usage: bin/irrpt_nag [-hp] [-c config] [-m message] <previous rev> <current rev>
-    ```
 
-    In this stage, any transit providers (or other interested parties) 
-    who still track prefix-list updates via e-mail rather than via IRR 
-    can be notified of the change.
+In this stage, any transit providers (or other interested parties) 
+who still track prefix-list updates via e-mail rather than via IRR 
+can be notified of the change.
 
-    As more providers begin to use IRR, and rely on it as their primary 
-    prefix tracking tool, this should become less and less necessary. 
-    Unfortunately many of the largest ISPs still use human processing of 
-    prefix lists, so for the immediate future you will probably still be 
-    getting a lot of use out of this tool.
+As more providers begin to use IRR, and rely on it as their primary 
+prefix tracking tool, this should become less and less necessary. 
+Unfortunately many of the largest ISPs still use human processing of 
+prefix lists, so for the immediate future you will probably still be 
+getting a lot of use out of this tool.
 
 ### irrpt_pfxgen
 
-    ```
     $ bin/irrpt_pfxgen -h
     Usage: bin/irrpt_pfxgen [-h] [-p pfxstr] [-l pfxlength] [-l pfxlength_v6] [-f format] <asn>
       pfxstr       - The prefix-list name format string (default: PEER:%d)
@@ -152,54 +147,52 @@ operations:
     ...
     $ bin/irrpt_pfxgen -f force10 42
     ...
-    ```
 
-    In this stage, actual router configurations are generated based on 
-    the aggregated data we have stored. Currently only the following 
-    formats are supported, but it should be trivial to add new ones:
+In this stage, actual router configurations are generated based on 
+the aggregated data we have stored. Currently only the following 
+formats are supported, but it should be trivial to add new ones:
 
-    1. Cisco/Foundry format (and anyone else with a similar CLI)
-    2. Juniper format
-    3. Extreme format
-    4. Force10 format
+1. Cisco/Foundry format (and anyone else with a similar CLI)
+2. Juniper format
+3. Extreme format
+4. Force10 format
 
-    These configs can then be deployed automatically using a variety of 
-    existing tools. Some of these tools include:
+These configs can then be deployed automatically using a variety of 
+existing tools. Some of these tools include:
 
-    JUNOScript         - http://www.juniper.net/support/junoscript/
-    Net::Telnet::Cisco - http://NetTelnetCisco.sourceforge.net/
-    RANCID             - http://www.shrubbery.net/rancid/
+JUNOScript         - http://www.juniper.net/support/junoscript/
+Net::Telnet::Cisco - http://NetTelnetCisco.sourceforge.net/
+RANCID             - http://www.shrubbery.net/rancid/
 
-    A few tidbits of examples are included in the "/example" directory.
-    There are of course a wide variety of ways to deploy configurations 
-    on routers, and most of them are outside the scope of this project.
+A few tidbits of examples are included in the "/example" directory.
+There are of course a wide variety of ways to deploy configurations 
+on routers, and most of them are outside the scope of this project.
 
-    Networks may find it appropriate to have an external database in place 
-    which tracks customer BGP session data, so that you can search by a 
-    customer name or ASN to automatically find and update only the necessary 
-    routers and BGP sessions. This is also outside the scope of the current 
-    project.
+Networks may find it appropriate to have an external database in place 
+which tracks customer BGP session data, so that you can search by a 
+customer name or ASN to automatically find and update only the necessary 
+routers and BGP sessions. This is also outside the scope of the current 
+project.
 
-    Juniper includes an example config pushing script in the JUNOSCript 
-    package which works well, despite being a little complicated and having 
-    something like 68 Perl dependancies. 
+Juniper includes an example config pushing script in the JUNOSCript 
+package which works well, despite being a little complicated and having 
+something like 68 Perl dependancies. 
 
-    Cisco can be configured a number of ways, including various perl 
-    modules, expect scripts. Due to issues like CLI interactivity delays, 
-    many users find that simply copying config updates via tftp is an easy 
-    way to manage changes.
+Cisco can be configured a number of ways, including various perl 
+modules, expect scripts. Due to issues like CLI interactivity delays, 
+many users find that simply copying config updates via tftp is an easy 
+way to manage changes.
 
-    The RANCID package includes a few expect scripts for logging in to 
-    routers to make changes, though they are primarily designed for reading 
-    status data, not deploying configurations.
+The RANCID package includes a few expect scripts for logging in to 
+routers to make changes, though they are primarily designed for reading 
+status data, not deploying configurations.
 
-    Many other systems exist as well.
+Many other systems exist as well.
 
 ### irrpt_eval
 
-    Show prefixes for a given AS-SET, in unaggregated or aggregated form.
+Show prefixes for a given AS-SET, in unaggregated or aggregated form.
 
-    ```
     $ bin/irrpt_eval -h
     Usage: bin/irrpt_eval [-hva] <object>
 
@@ -220,14 +213,12 @@ operations:
     - Aggregating routes - aggregating neighboring prefixes...
     * WARNING: Aggregating 2a01:8840:0004:0000:0000:0000:0000:0000/48 and 2a01:8840:0005:0000:0000:0000:0000:0000/48 into 2a01:8840:4:2020:2020:2020:2020:2020/47
     ...
-    ```
 
 
 ### irrpt_explorer
 
-    Expand AS-SETs into their member ASes.
+Expand AS-SETs into their member ASes.
 
-    ```
     $ bin/irrpt_explorer -h
     Usage: bin/irrpt_explorer [-h] <object>
 
@@ -243,11 +234,11 @@ operations:
           AS197058
           AS21312
     ...
-    ```
 
 
 Instructions
 ------------
+
     To get started, you probably want to take a look at every file in 
     the /conf directory. The most important information to change will be 
     paths and company-specific information such as the name, ASN, and 
