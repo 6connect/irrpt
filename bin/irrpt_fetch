@@ -203,7 +203,16 @@ while (!feof($irrdb)) {
 
 	/* Aggregate the route file */
 	status(STATUS_NOTICE, "Aggregating routes.");
-  $aggregated_routes = aggregate_routes($routefile, $aggfile);
+  $aggregated_routes = aggregate_routes($routefile);
+  /* print result to a file */
+  $afile = fopen($aggfile, "w")
+    or status(STATUS_ERROR, "Can not open agg route file, aborting.");
+  $count = count($aggregated_routes);
+  for ($i = 1; $i < $count; $i++)
+  {
+    fwrite($afile, "$aggregated_routes[$i]");
+  }
+  fclose($afile);
 
 	/* Perform CVS tracking, then send e-mail updates */
 	status(STATUS_NOTICE, "Tracking data in CVS.");

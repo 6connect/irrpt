@@ -4,7 +4,9 @@
 $currentpath = dirname(realpath(__FILE__));
 require("{$currentpath}/../conf/irrpt.conf");
 require("{$currentpath}/../inc/irrquery.inc");
+require("{$currentpath}/../inc/aggregate.inc");
 require("{$currentpath}/../inc/status.inc");
+require("{$currentpath}/../inc/ipv6.inc");
 
 $o_aggregate	= 0;	/* Default: do not aggregate prefixes */
 $o_verbose	= 0;	/* Default: verbose mode off */
@@ -83,15 +85,16 @@ if (!$o_aggregate) {
 
 	fclose($tmp);
 
-	/* Aggregate the route file with an external tool */
-	status(STATUS_NOTICE, "Aggregating routes.");
-	if (!file_exists($cfg['tools']['aggregate']) || !is_executable($cfg['tools']['aggregate'])) {
-		status(STATUS_ERROR, "Can not open aggregate tool, aborting.");
-		exit(1);
-	}
+  /* Aggregate the route file */
+  status(STATUS_NOTICE, "Aggregating routes.");
+  $aggregated_routes = aggregate_routes($tmpname);
 
-	$cmd = "{$cfg['tools']['aggregate']} -q {$cfg['aggregate']['params']} < {$tmpname}";
-	system($cmd);
+  /* print result */
+  $count = count($aggregated_routes);
+  for ($i = 1; $i < $count; $i++)
+  {
+    print "$aggregated_routes[$i]";
+  }
 
 	unlink($tmpname);
 }

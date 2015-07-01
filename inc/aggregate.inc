@@ -3,7 +3,7 @@
 $currentpath = dirname(realpath(__FILE__));
 require("{$currentpath}/../conf/irrpt.conf");
 
-function aggregate_routes($routefile, $aggfile)
+function aggregate_routes($routefile)
 {
 
   global $cfg;
@@ -146,16 +146,8 @@ function aggregate_routes($routefile, $aggfile)
     }
     $addresses = array_values($addresses);
   }
-  
-  /* print result to a file */
-  $afile = fopen($aggfile, "w")
-    or status(STATUS_ERROR, "Can not open agg route file, aborting.");
-  $count = count($addresses);
-  for ($i = 1; $i < $count; $i++)
-  {
-    fwrite($afile, "$addresses[$i]");
-  }
-  fclose($afile);
+ 
+  return $addresses; 
 }
 
 ?>
