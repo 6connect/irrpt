@@ -88,9 +88,11 @@ operations:
 
     Quiet mode:
     $ bin/irrpt_fetch -q 42
+    ...
 
     Verbose mode:
     $ bin/irrpt_fetch -v 42
+    ...
     ```
 
     This is the stage where you pull data for the objects that you are 
@@ -195,16 +197,88 @@ operations:
 
 * irrpt_eval
 
+    Show prefixes for a given AS-SET, in unaggregated or aggregated form.
+
     ```
     $ bin/irrpt_eval -h
     Usage: bin/irrpt_eval [-hva] <object>
+
+    Pull unaggregated prefixes:
+    $ bin/irrpt_eval AS-PCH
+    2a01:8840:4::/48
+    2a01:8840:5::/48
+    ...
+
+    Pull aggregated prefixes:
+    $ bin/irrpt_eval -a AS-PCH
+    2a01:8840:4:2020:2020:2020:2020:2020/47
+    ...
+
+    Verbose mode:
+    $ bin/irrpt_eval -v -a AS-PCH
+    ...
+    - Aggregating routes - aggregating neighboring prefixes...
+    * WARNING: Aggregating 2a01:8840:0004:0000:0000:0000:0000:0000/48 and 2a01:8840:0005:0000:0000:0000:0000:0000/48 into 2a01:8840:4:2020:2020:2020:2020:2020/47
+    ...
     ```
+
 
 * irrpt_explorer
 
+    Expand AS-SETs into their member ASes.
+
     ```
     $ bin/irrpt_explorer -h
-    Usage: bin/irrpt_explorer [-hv] <object>
+    Usage: bin/irrpt_explorer [-h] <object>
+
+    Example:
+    $ bin/irrpt_explorer AS-PCH
+    AS-PCH
+    {
+      AS-RS
+      {
+        AS-CHEREDA-SM
+        {
+          AS-RS (dup)
+          AS197058
+          AS21312
+          AS24999
+          AS25505
+          AS42530
+          AS48892
+          AS51874
+          AS51972
+          AS60313
+        }
+        AS13202
+        AS16327
+        AS20539
+        AS48892
+        AS60313
+      }
+      AS16668
+      AS16686
+      AS187
+      AS20144
+      AS27
+      AS27678
+      AS297
+      AS32978
+      AS32979
+      AS35160
+      AS38052
+      AS3856
+      AS42
+      AS44876
+      AS45170
+      AS45494
+      AS52234
+      AS52306
+      AS54145
+      AS54390
+      AS715
+      AS7251
+    }
     ```
 
 
