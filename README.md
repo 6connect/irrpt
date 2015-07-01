@@ -85,11 +85,13 @@ operations:
     $ bin/irrpt_fetch -h
     Usage: bin/irrpt_fetch [-hqv] [asn]
 
-    Quiet mode:
+Quiet mode:
+
     $ bin/irrpt_fetch -q 42
     ...
 
-    Verbose mode:
+Verbose mode:
+
     $ bin/irrpt_fetch -v 42
     ...
 
@@ -138,7 +140,8 @@ getting a lot of use out of this tool.
                      force10
                      juniper
 
-    Examples:
+Examples:
+
     $ bin/irrpt_pfxgen -f cisco 42
     ...
     $ bin/irrpt_pfxgen -f juniper 42
@@ -196,18 +199,21 @@ Show prefixes for a given AS-SET, in unaggregated or aggregated form.
     $ bin/irrpt_eval -h
     Usage: bin/irrpt_eval [-hva] <object>
 
-    Pull unaggregated prefixes:
+Pull unaggregated prefixes:
+
     $ bin/irrpt_eval AS-PCH
     2a01:8840:4::/48
     2a01:8840:5::/48
     ...
 
-    Pull aggregated prefixes:
+Pull aggregated prefixes:
+
     $ bin/irrpt_eval -a AS-PCH
     2a01:8840:4:2020:2020:2020:2020:2020/47
     ...
 
-    Verbose mode:
+Verbose mode:
+
     $ bin/irrpt_eval -v -a AS-PCH
     ...
     - Aggregating routes - aggregating neighboring prefixes...
@@ -222,7 +228,8 @@ Expand AS-SETs into their member ASes.
     $ bin/irrpt_explorer -h
     Usage: bin/irrpt_explorer [-h] <object>
 
-    Example:
+Example:
+
     $ bin/irrpt_explorer AS-PCH
     AS-PCH
     {
@@ -239,10 +246,10 @@ Expand AS-SETs into their member ASes.
 Instructions
 ------------
 
-    To get started, you probably want to take a look at every file in 
-    the /conf directory. The most important information to change will be 
-    paths and company-specific information such as the name, ASN, and 
-    e-mail addresses.
+To get started, you probably want to take a look at every file in 
+the /conf directory. The most important information to change will be 
+paths and company-specific information such as the name, ASN, and 
+e-mail addresses.
 
     irrpt.conf      - This is the master config file which contains global 
                       configuration information, the paths to our internal 
@@ -261,30 +268,30 @@ Instructions
                       good example for this file would be known bogon routes,
                       or routes in known unallocated space.
 
-    The irrdb.conf file should certain a unique ASN, the IRR object (an 
-    AS-SET or AUT-NUM record) that you are interested in tracking, and a 
-    contact e-mail for change notification. You probably want to track your 
-    own ASN and AS-SET record here as well.
+The irrdb.conf file should certain a unique ASN, the IRR object (an 
+AS-SET or AUT-NUM record) that you are interested in tracking, and a 
+contact e-mail for change notification. You probably want to track your 
+own ASN and AS-SET record here as well.
 
-    A reasonable deployment would be to crontab the fetch process once or 
-    better yet twice a day. If you need to add a new customer outside of 
-    the normal fetch schedule, or if a customer needs an emergency 
-    prefix-list update, you can add the ASN/IRR Object to irrdb.conf and 
-    run a manual pull of just that ASN, with "./fetch ASN".
+A reasonable deployment would be to crontab the fetch process once or 
+better yet twice a day. If you need to add a new customer outside of 
+the normal fetch schedule, or if a customer needs an emergency 
+prefix-list update, you can add the ASN/IRR Object to irrdb.conf and 
+run a manual pull of just that ASN, with "./fetch ASN".
 
-    After the updates are processed, you should receive a local copy of the 
-    e-mail. It is probably reasonable to keep a human being in the loop 
-    between prefix fetching and prefix deployment, to make certain that 
-    nothing "bad" or unintended is happening. After you are reasonably 
-    certain that the changes are ready for deployment, you can generate 
-    the router configs use the "pfxgen" tool. Optionally, you can nag 
-    any of your transit providers who still require e-mail updates using 
-    the nag process.
+After the updates are processed, you should receive a local copy of the 
+e-mail. It is probably reasonable to keep a human being in the loop 
+between prefix fetching and prefix deployment, to make certain that 
+nothing "bad" or unintended is happening. After you are reasonably 
+certain that the changes are ready for deployment, you can generate 
+the router configs use the "pfxgen" tool. Optionally, you can nag 
+any of your transit providers who still require e-mail updates using 
+the nag process.
 
-    If there is anything else that you can't figure out, it is probably 
-    either a bug or an oversight in the documentation. Send e-mail about 
-    either one, and I'll make certain it gets addressed in a future 
-    release.
+If there is anything else that you can't figure out, it is probably 
+either a bug or an oversight in the documentation. Send e-mail about 
+either one, and I'll make certain it gets addressed in a future 
+release.
 
 
 FAQ
