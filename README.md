@@ -83,7 +83,7 @@ operations:
 * irrpt_fetch
 
     ```
-    $  bin/irrpt_fetch -h
+    $ bin/irrpt_fetch -h
     Usage: bin/irrpt_fetch [-hqv] [asn]
 
     Quiet mode:
