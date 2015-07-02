@@ -279,15 +279,19 @@ while (!feof($irrdb))
 
   if( $o_4 == 1 && $o_6 == 0 )
   {
+	  status(STATUS_NOTICE, "Fetching v4 routes.");
     $asnlist4 = process_v4($irr, $object, $routefile4, $aggfile4);
   }
   elseif( $o_6 == 1 && $o_4 == 0 )
   {
+	  status(STATUS_NOTICE, "Fetching v6 routes.");
     $asnlist6 = process_v6($irr, $object, $routefile6, $aggfile6);
   }
   else
   {
+	  status(STATUS_NOTICE, "Fetching v4 routes.");
     $asnlist4 = process_v4($irr, $object, $routefile4, $aggfile4);
+	  status(STATUS_NOTICE, "Fetching v6 routes.");
     $asnlist6 = process_v6($irr, $object, $routefile6, $aggfile6);
   }
 

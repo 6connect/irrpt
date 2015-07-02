@@ -23,6 +23,7 @@
 /* Figure out if we have an AUT-NUM or an AS-SET, and resolve it for v4 addresses */
 function resolve_v4($irr, $object)
 {
+  $asnlist = array();
   $routes4 = $irr->get_v4_routes_by_origin($object);
   if ($routes4 == FALSE)
   {
@@ -40,6 +41,7 @@ function resolve_v4($irr, $object)
 /* Figure out if we have an AUT-NUM or an AS-SET, and resolve it for v6 addresses */
 function resolve_v6($irr, $object)
 {
+  $asnlist = array();
   $routes6 = $irr->get_v6_routes_by_origin($object);
   if ($routes6 == FALSE)
   {
