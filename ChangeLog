@@ -1,9 +1,11 @@
 1.29 -  June 30 2015
 
  * Implemented aggregate fntionality and removed dependency on the
-   external agregate tool
+   external agregate tool.
  * Added v6 support to IRR query, to prefix exclusion via 
-   exclusions.conf, aggregation and prefix generator
+   exclusions.conf, to aggregation and to the prefix generator.
+ * Renamed irrpt_eval and irrpt_explorer into irrpt_list_ases
+   and irrpt_list_prefixes.
 
 1.28 - June 8 2015
 
