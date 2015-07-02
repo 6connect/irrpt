@@ -66,7 +66,7 @@ function exclusions_filter($file, $routes)
        
         /* apply the mask for prefix b on both, the current prefix and the one from the ecludes, to get the network portion  */ 
         $a = _v6_to_network($pfx_a[0], $pfx_b[1] );
-        $b = _v6_to_network($pfx_b[0], $pfx_b[1]);
+        $b = _v6_to_network($pfx_b[0], $pfx_a[1]);
 
         /* If both are identical, so the current prefix fits into the to be excluded one, we take the route out */
         if ($a == $b) {
