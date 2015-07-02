@@ -98,19 +98,26 @@ function aggregate_routes($routefile)
       /* If both IP's are v4 */
       elseif (_ip_version($current[0]) == '4' and _ip_version($next[0]) == '4')
       {
-        /* Mask both routes with mask-1 and look if they are identical */
-        $a = ip2long($current[0]) & (0xFFFFFFFF << (32 - $current[1] - 1));
-        $b = ip2long($next[0]) & (0xFFFFFFFF << (32 - $next[1] - 1));
-        if ($a == $b) 
+        /* If the masks are the same, mask both routes with mask-1 and look if those are identical */
+        if ($current[1] == $next[1] )
         {
-          /* Remove both smaller prefixes and add the aggregted one */
-          $ip_a = long2ip($a);
-          $new_mask = $next[1] - 1;
-          $new_prefox = $ip_a .  "/" . $new_mask;
-          status(STATUS_WARNING, "Aggregating {$current[0]}/{$current[1]} and {$next[0]}/{$next[1]} into {$new_prefix}");
-          unset($addresses[$i - 1]);
-          $addresses[$i] = "{$new_prefix}\n"; 
-          $changes = 1;
+          $a = ip2long($current[0]) & (0xFFFFFFFF << (32 - $current[1] - 1));
+          $b = ip2long($next[0]) & (0xFFFFFFFF << (32 - $next[1] - 1));
+          if ($a == $b) 
+          {
+            /* Remove both smaller prefixes and add the aggregted one */
+            $ip_a = long2ip($a);
+            $new_mask = $next[1] - 1;
+            $new_prefox = $ip_a .  "/" . $new_mask;
+            status(STATUS_WARNING, "Aggregating {$current[0]}/{$current[1]} and {$next[0]}/{$next[1]} into {$new_prefix}");
+            unset($addresses[$i - 1]);
+            $addresses[$i] = "{$new_prefix}\n"; 
+            $changes = 1;
+          }
+          else 
+          {
+            $current = $next;
+          }
         }
         else 
         {
@@ -120,17 +127,25 @@ function aggregate_routes($routefile)
       /* If both IP's are v6 */
       elseif (_ip_version($current[0]) == '6' and _ip_version($next[0]) == '6')
       {
-        $a = _v6_to_network($current[0], $current[1] - 1);
-        $b = _v6_to_network($next[0], $next[1] - 1);
-        if ($a == $b) 
+        /* If the masks are the same, mask both routes with mask-1 and look if those are identical */
+        if ($current[1] == $next[1] )
         {
-          /* Remove both smaller prefixes and add the aggregted one */
-          $new_mask = $next[1] - 1;
-          $new_prefix = $a .  "/" . $new_mask;
-          status(STATUS_WARNING, "Aggregating {$current[0]}/{$current[1]} and {$next[0]}/{$next[1]} into {$new_prefix}");
-          unset($addresses[$i - 1]);
-          $addresses[$i] = "{$new_prefix}\n"; 
-          $changes = 1;
+          $a = _v6_to_network($current[0], $current[1] - 1);
+          $b = _v6_to_network($next[0], $next[1] - 1);
+          if ($a == $b) 
+          {
+            /* Remove both smaller prefixes and add the aggregted one */
+            $new_mask = $next[1] - 1;
+            $new_prefix = $a .  "/" . $new_mask;
+            status(STATUS_WARNING, "Aggregating {$current[0]}/{$current[1]} and {$next[0]}/{$next[1]} into {$new_prefix}");
+            unset($addresses[$i - 1]);
+            $addresses[$i] = "{$new_prefix}\n"; 
+            $changes = 1;
+          }
+          else 
+          {
+            $current = $next;
+          }
         }
         else 
         {
