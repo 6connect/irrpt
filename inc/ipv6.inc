@@ -6,7 +6,7 @@
 /* https:\/\/www.mikemackintosh.com\/5-tips-for-working-with-ipv6-in-php */
 
 /* Create a v6 netmask from a subnet integer value */
-function _v6_mask_int2bin($int) 
+function _v6_mask_int2hex($int) 
 {
   $hosts = (128 - $int);
   $networks = 128 - $hosts;
@@ -40,12 +40,15 @@ function _v6_expand($ip)
 function _v6_to_network($pfx, $mask) 
 {
   /* convert v6 address into bin form */
-  $pfx_bin= current( unpack( "A16", inet_pton( $pfx ) ) );
+#  print "$pfx\n";
+  $pfx_bin= inet_pton( $pfx );
   /* do the same with the provided mask */
-  $mask_bin = current( unpack( "A16", inet_pton( _v6_mask_int2bin($mask) ) ) );
+  $mask_bin = inet_pton( _v6_mask_int2hex($mask));
+#  print "$mask_bin\n";
   /* apply mask to prefix and reverse the binary conversion to a printable string to get the network portion*/
   $network = inet_ntop( pack( "A16", $pfx_bin & $mask_bin ) );
-  return $network;
+ # print "$network\n\n";
+  return _v6_expand($network);
 }
 
 ?>
