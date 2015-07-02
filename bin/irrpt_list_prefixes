@@ -10,6 +10,8 @@ require("{$currentpath}/../inc/ipv6.inc");
 
 $o_aggregate	= 0;	/* Default: do not aggregate prefixes */
 $o_verbose	= 0;	/* Default: verbose mode off */
+$o_4 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
+$o_6 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
 
 $irr		= new IRRQuery;	/* Open our IRRQuery class */
 
@@ -23,7 +25,7 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 	switch($_SERVER['argv'][$offset]) {
 	    case "-h":
 	    case "--help":
-		printf("Usage: %s [-hva] <object>\n", $_SERVER['argv'][0]);
+		printf("Usage: %s [-h46va] <object>\n", $_SERVER['argv'][0]);
 		exit(1);
 
 	    case "-v":
@@ -35,11 +37,21 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 	    case "--aggregate":
 		$o_aggregate = 1;
 		break;
+
+	    case "-4":
+	    case "--4":
+		$o_4 = 1;
+		break;
+
+	    case "-6":
+	    case "--6":
+		$o_6 = 1;
+		break;
 	}
 }
 
 if (($_SERVER['argc'] - $offset) < 1) {
-	printf("Usage: %s [-hva] <object>\n", $_SERVER['argv'][0]);
+	printf("Usage: %s [-h46va] <object>\n", $_SERVER['argv'][0]);
 	exit(1);
 }
 
@@ -64,10 +76,25 @@ if ($cfg['fetch']['sources'] != "all")
 
 /* Figure out if we have an AUT-NUM or an AS-SET, and resolve it */
 status(STATUS_NOTICE, "Querying IRR Object {$object}");
-if (($routes = $irr->get_routes_by_origin($object)) == FALSE) {
-	$data = $irr->get_data_by_set($object);
-	$routes = $data['routes'];
+$routes = array();
+$routes4 = array();
+$routes6 = array();
+
+if( $o_4 == 1 && $o_6 == 0 )
+{
+  list($routes4, $asnlist4) = resolve_v4($irr, $object);
 }
+elseif( $o_6 == 1 && $o_4 == 0 )
+{
+  list($routes6, $asnlist6) = resolve_v6($irr, $object);
+}
+else
+{
+  list($routes4, $asnlist4) = resolve_v4($irr, $object);
+  list($routes6, $asnlist6) = resolve_v6($irr, $object);
+}
+
+$routes = array_merge($routes4, $routes6);
 
 if (!$o_aggregate) {
 	for($i=0;$i<sizeof($routes);$i++)

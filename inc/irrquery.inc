@@ -5,7 +5,56 @@
  *  IRRToolSet, but we were forced to whip this up after not being able to 
  *  find any network admin who could actually manage to successfully compile 
  *  IRRToolSet out of the box. :)
+ * 
+ *  Also includes a few functions to make processing the class easier.
+ *
  */
+
+ /*
+ * {
+ *   $routes = $irr->get_v4_routes_by_origin($object);
+ *   if ($routes == FALSE) {
+ *     $data = $irr->get_data_by_set($object);
+ *     $routes = array_merge($routes, $data['routes4']);
+ *   }
+ * }
+ */
+
+/* Figure out if we have an AUT-NUM or an AS-SET, and resolve it for v4 addresses */
+function resolve_v4($irr, $object)
+{
+  $routes4 = $irr->get_v4_routes_by_origin($object);
+  if ($routes4 == FALSE)
+  {
+    $data = $irr->get_data_by_set($object, '4');
+    $routes4 = $data['routes4'];
+    $asnlist = $data['asns'];
+  }
+  else
+  {
+    $asnlist[0] = $object;
+  }
+  return array($routes4, $asnlist);
+}
+
+/* Figure out if we have an AUT-NUM or an AS-SET, and resolve it for v6 addresses */
+function resolve_v6($irr, $object)
+{
+  $routes6 = $irr->get_v6_routes_by_origin($object);
+  if ($routes6 == FALSE)
+  {
+    $data = $irr->get_data_by_set($object, '6');
+    $routes6 = $data['routes6'];
+    $asnlist = $data['asns'];
+  }
+  else
+  {
+    $asnlist[0] = $object;
+  }
+  return array($routes6, $asnlist);
+}
+
+
 class IRRQuery {
   var $host;
   var $port;
@@ -235,6 +284,7 @@ class IRRQuery {
       if ($this->caching)
         $this->_cache_add("origin", $origin, $results);
     }
+    return $results;
   }
 
   function get_v6_routes_by_origin($origin)
@@ -262,14 +312,15 @@ class IRRQuery {
       if ($this->caching)
         $this->_cache_add("origin6", $origin, $results);
     }
-
     return $results;
   }
 
-  function get_data_by_set($set)
+  function get_data_by_set($set, $version)
   {
-    $routes = array();
+    $routes4 = array();
     $routes6 = array();
+    $results4= array();
+    $results6 = array();
 
     $stats['missing_autnum']  = 0;
     $stats['missing_autnum_v6']  = 0;
@@ -284,35 +335,39 @@ class IRRQuery {
 
     /* Detect route-set, otherwise assume as-set or autnum */
     if ((strchr($response, '.') != FALSE) && (stristr($response, "AS") == FALSE)) {
-      $routes = $this->_classful_fix($autnumlist);
+      $routes4 = $this->_classful_fix($autnumlist);
     } 
     else 
     {
       for ($i = 0; $i < sizeof($autnumlist); $i++) 
       {
-        $results = $this->get_v4_routes_by_origin($autnumlist[$i]);
-        $results6 = $this->get_v6_routes_by_origin($autnumlist[$i]);
-
-        if ($results == FALSE) 
+        if($version == '4')
         {
-          $stats['missing_autnum']++;
-          continue;
+          $results4 = $this->get_v4_routes_by_origin($autnumlist[$i]);
+          if ($results4 == FALSE) 
+          {
+            $stats['missing_autnum']++;
+            continue;
+          }
         }
-        if ($results6 == FALSE) 
+        if($version == '6')
         {
-          $stats['missing_autnum_v6']++;
-          continue;
+          $results6 = $this->get_v6_routes_by_origin($autnumlist[$i]);
+          if ($results6 == FALSE) 
+          {
+            $stats['missing_autnum_v6']++;
+            continue;
+          }
         }
 
-
-        $routes = array_merge($routes, $results);
-        $routes6 = $results6;
+        $routes4 = array_merge($routes4, $results4);
+        $routes6 = array_merge($routes6, $results6);
       }
     }
-    natsort($routes);
+    natsort($routes4);
     natsort($routes6);
 
-    $results['routes'] = array_values(array_unique($routes));
+    $results['routes4'] = array_values(array_unique($routes4));
     $results['routes6'] = array_values(array_unique($routes6));
 
     $results['asns']   = array_values(array_unique($autnumlist));
