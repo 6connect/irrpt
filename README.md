@@ -192,45 +192,45 @@ status data, not deploying configurations.
 
 Many other systems exist as well.
 
-### irrpt_eval
+### irrpt_list_prefixes
 
 Show prefixes for a given AS-SET, in unaggregated or aggregated form.
 
-    $ bin/irrpt_eval -h
-    Usage: bin/irrpt_eval [-hva] <object>
+    $ bin/irrpt_list_prefixes -h
+    Usage: bin/irrpt_list_prefixes [-hva] <object>
 
 Pull unaggregated prefixes:
 
-    $ bin/irrpt_eval AS-PCH
+    $ bin/irrpt_list_prefixes AS-PCH
     2a01:8840:4::/48
     2a01:8840:5::/48
     ...
 
 Pull aggregated prefixes:
 
-    $ bin/irrpt_eval -a AS-PCH
+    $ bin/irrpt_list_prefixes -a AS-PCH
     2a01:8840:4:2020:2020:2020:2020:2020/47
     ...
 
 Verbose mode:
 
-    $ bin/irrpt_eval -v -a AS-PCH
+    $ bin/irrpt_list_prefixes -v -a AS-PCH
     ...
     - Aggregating routes - aggregating neighboring prefixes...
     * WARNING: Aggregating 2a01:8840:0004:0000:0000:0000:0000:0000/48 and 2a01:8840:0005:0000:0000:0000:0000:0000/48 into 2a01:8840:4:2020:2020:2020:2020:2020/47
     ...
 
 
-### irrpt_explorer
+### irrpt_list_ases
 
-Expand AS-SETs into their member ASes.
+Show AS numbers for a given AS-SET.
 
-    $ bin/irrpt_explorer -h
-    Usage: bin/irrpt_explorer [-h] <object>
+    $ bin/irrpt_list_ases -h
+    Usage: bin/irrpt_list_ases [-h] <object>
 
 Example:
 
-    $ bin/irrpt_explorer AS-PCH
+    $ bin/irrpt_list_ases AS-PCH
     AS-PCH
     {
       AS-RS
