@@ -91,18 +91,20 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 
 		$prefix = explode("/", rtrim($line));
 
-	        printf("ip prefix-list %s permit %s/%d", $pfxname, $prefix[0],
-			$prefix[1]);
 
     if (_ip_version($line) == '4')
     {
-		  if ($prefix[1] < $pfxlen)
-			  printf(" le %s", $pfxlen);
+		printf("ip prefix-list %s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
+
+		if ($prefix[1] < $pfxlen)
+			printf(" le %s", $pfxlen);
     }
     elseif (_ip_version($line) == '6')
     {
-      if ($prefix[1] < $pfxlen_v6)
-        printf(" le %s", $pfxlen_v6);
+		printf("ipv6 prefix-list %s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
+
+		if ($prefix[1] < $pfxlen_v6)
+			printf(" le %s", $pfxlen_v6);
     }
 		printf("\n");
 	}

@@ -17,7 +17,7 @@ function explorer($object, $depth)
 
 	printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
 
-	if (eregi("AS-.", $object)) {
+	if (preg_match("/AS-./", $object)) {
 		if (!isset($done[strval($object)])) {
 			$done[strval($object)] = true;
 

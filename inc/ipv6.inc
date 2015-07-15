@@ -1,4 +1,4 @@
-<?
+<?php
 
 /* v6 helper functions */
 

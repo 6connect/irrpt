@@ -1,4 +1,4 @@
-<?
+<?php
 
 $currentpath = dirname(realpath(__FILE__));
 require("{$currentpath}/../conf/irrpt.conf");
