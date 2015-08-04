@@ -329,6 +329,12 @@ class IRRQuery {
 
     /* XXX - This should be caching results, maybe? */
 
+    /* Prepend 'AS' to set if not provided */
+    if (preg_match("/^AS./", $set) == 0) 
+    {
+      $set = 'AS'.$set;
+    }
+
     /* Query the set data */
     $this->_send("!i{$set},1\n");
     if (($response = $this->_response()) == FALSE)
