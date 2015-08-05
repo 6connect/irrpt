@@ -20,9 +20,7 @@ $cvs		= new CVS;		/* Open our CVS class */
 $count		= 0;
 $offset		= 0;
 $o_quiet	= 0;
-$o_verbose	= 0;
-$o_4		= 0;
-$o_6		= 0;
+$o_cvs	= 1;
 
 function track($file)
 {
@@ -187,7 +185,7 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++)
 	switch($_SERVER['argv'][$offset]) {
 	    case "-h":
 	    case "--help":
-		printf("Usage: %s [-h46qv] [-f file] [asn]\n", $_SERVER['argv'][0]);
+		printf("Usage: %s [-h46qv] [-f file] [--nocvs] [asn]\n", $_SERVER['argv'][0]);
 		exit(1);
 	    case "-q":
 	    case "--quiet":
@@ -196,6 +194,9 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++)
 	    case "-v":
 	    case "--verbose":
 		$o_verbose = 1;
+		break;
+	    case "--nocvs":
+		$o_cvs = 0;
 		break;
 	    case "-4":
 	    case "--4":
@@ -331,33 +332,36 @@ while (!feof($irrdb))
 	fclose($output);
 
 	/* Perform CVS tracking */
-	status(STATUS_NOTICE, "Tracking data in CVS.");
-	$cvs->init($cfg['paths']['cvsroot']);
+  if ($o_cvs)
+  {
+	  status(STATUS_NOTICE, "Tracking data in CVS.");
+  	$cvs->init($cfg['paths']['cvsroot']);
 
-	$rev = track($routefile);
-	$rev = track($routefile4);
-	$rev = track($routefile6);
-	$rev = track($aggfile);
-	$rev = track($aggfile4);
-	$rev = track($aggfile6);
+	  $rev = track($routefile);
+  	$rev = track($routefile4);
+	  $rev = track($routefile6);
+  	$rev = track($aggfile);
+	  $rev = track($aggfile4);
+  	$rev = track($aggfile6);
 
-	/* Send e-mail updates */
-	status(STATUS_NOTICE, "Send update email.");
-	switch ($cfg['fetch']['emailonchange']) {
-	    case "both":
-		update_email($routefile, $email, $asn, $object, $rev, "Full");
-		update_email($aggfile, $email, $asn, $object, $rev, "Aggregated");
-		break;
-	    case "full":
-		update_email($routefile, $email, $asn, $object, $rev, "Full");
-		break;
-	    case "aggregate":
-		update_email($aggfile, $email, $asn, $object, $rev, "Aggregated");
-		break;
-	    case "none":
-	    case "no":
-		break;
-	}
+	  /* Send e-mail updates */
+	  status(STATUS_NOTICE, "Send update email.");
+  	switch ($cfg['fetch']['emailonchange']) {
+	      case "both":
+		  update_email($routefile, $email, $asn, $object, $rev, "Full");
+	  	update_email($aggfile, $email, $asn, $object, $rev, "Aggregated");
+  		break;
+	      case "full":
+	  	update_email($routefile, $email, $asn, $object, $rev, "Full");
+  		break;
+	      case "aggregate":
+	  	update_email($aggfile, $email, $asn, $object, $rev, "Aggregated");
+  		break;
+	      case "none":
+	      case "no":
+		  break;
+	  }
+  }
 }
 
 if( $o_quiet == 1 )
