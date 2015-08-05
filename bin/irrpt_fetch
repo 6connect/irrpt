@@ -187,7 +187,7 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++)
 	switch($_SERVER['argv'][$offset]) {
 	    case "-h":
 	    case "--help":
-		printf("Usage: %s [-h46qv] [asn]\n", $_SERVER['argv'][0]);
+		printf("Usage: %s [-h46qv] [-f file] [asn]\n", $_SERVER['argv'][0]);
 		exit(1);
 	    case "-q":
 	    case "--quiet":
@@ -205,6 +205,11 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++)
 	    case "--6":
 		$o_6 = 1;
 		break;
+	    case "-f":
+	    case "--file":
+		$o_irrdb = $_SERVER['argv'][$offset+1];
+    $offset++;
+		break;
 	}
 }
 
@@ -220,6 +225,12 @@ date_default_timezone_set($cfg['global']['timezone']);
 ini_set("memory_limit",$cfg['global']['memory_limit']);
 
 /* Open the file with the list of IRR objects we will be tracking */
+/* provided via command line or through the config file */
+if ($o_irrdb)
+{
+  $cfg['cfgfiles']['irrdb_list'] = $o_irrdb;
+}
+
 if (!($irrdb = fopen($cfg['cfgfiles']['irrdb_list'], "r"))) 
 {
 	status(STATUS_ERROR, "Unable to open irrdb config file, aborting.");
