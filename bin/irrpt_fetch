@@ -101,6 +101,7 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
  	  fwrite($output4, sprintf("%s\n", $routes4[$i]));
   }
   fclose($output4);
+  chmod($routefile4, 0644);
 
 	/* Aggregate the route file */
 	status(STATUS_NOTICE, "Aggregating v4 routes.");
@@ -114,6 +115,7 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
     fwrite($afile4, "$aggregated_routes4[$i]");
   }
   fclose($afile4);
+  chmod($aggfile4, 0644);
 
   return $asnlist4;
 }
@@ -144,6 +146,7 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
 		fwrite($output6, sprintf("%s\n", $routes6[$i]));
   }
 	fclose($output6);
+  chmod($routefile6, 0644);
 
 	/* Aggregate the route file */
 	status(STATUS_NOTICE, "Aggregating v6 routes.");
@@ -157,6 +160,7 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
     fwrite($afile6, "$aggregated_routes6[$i]");
   }
   fclose($afile6);
+  chmod($aggfile6, 0644);
 
   return $asnlist6;
 }
@@ -272,8 +276,12 @@ while (!feof($irrdb))
   $object		= $results[1];
   $email		= $results[2];
 
- /* Skip invalid ASNs, or ASNs we aren't interested in */
-  if (($asn < 1) || (($asn > 64512) && ($asn < 131072))|| ($o_asn && ($asn != $o_asn)))
+ /* Skip invalid ASNs */
+  if ($asn < 1)
+    status(STATUS_ERROR, "ASN $asn invalid, skipping.");
+    continue;
+  if (($asn > 64512) && ($asn < 131072))
+    status(STATUS_ERROR, "ASN $asn invalid, skipping.");
     continue;
 
   $count++;
@@ -332,6 +340,7 @@ while (!feof($irrdb))
 		fwrite($output, sprintf("%s\n", preg_replace("/[aA][sS]/", "", $asnlist[$i])));
   }
 	fclose($output);
+  chmod($asnfile, 0644);
 
 	/* Perform CVS tracking */
   if ($o_cvs == 1 )
