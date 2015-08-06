@@ -93,7 +93,7 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
 	status(STATUS_NOTICE, "Writing routes to local database.");
   if (($output4 = fopen($routefile4, "w")) == FALSE) 
   {
-    status(STATUS_ERROR, "Can not open IRRDB output file for {$asn}, skipping this record.");
+    status(STATUS_WARNING, "Can not open IRRDB output file for {$asn}, skipping this record.");
     continue;
   }
   for($i = 0; $i < sizeof($routes4); $i++)
@@ -101,21 +101,25 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
  	  fwrite($output4, sprintf("%s\n", $routes4[$i]));
   }
   fclose($output4);
-  chmod($routefile4, 0644);
+  chmod($routefile4, $cfg['cfgfiles']['umask']);
 
 	/* Aggregate the route file */
 	status(STATUS_NOTICE, "Aggregating v4 routes.");
   $aggregated_routes4 = aggregate_routes($routefile4);
 
   /* print result to a file */
-  $afile4 = fopen($aggfile4, "w")
-    or status(STATUS_ERROR, "Can not open agg route file, aborting.");
+  if (($afile4 = fopen($aggfile4, "w")) == FALSE)
+  {
+    status(STATUS_WARNING, "Can not open agg route file, skipping this record..");
+    continue;
+  }
+
   for ($i = 0; $i < sizeof($aggregated_routes4); $i++)
   {
     fwrite($afile4, "$aggregated_routes4[$i]");
   }
   fclose($afile4);
-  chmod($aggfile4, 0644);
+  chmod($aggfile4, $cfg['cfgfiles']['umask']);
 
   return $asnlist4;
 }
@@ -146,21 +150,24 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
 		fwrite($output6, sprintf("%s\n", $routes6[$i]));
   }
 	fclose($output6);
-  chmod($routefile6, 0644);
+  chmod($routefile6, $cfg['cfgfiles']['umask']);
 
 	/* Aggregate the route file */
 	status(STATUS_NOTICE, "Aggregating v6 routes.");
   $aggregated_routes6 = aggregate_routes($routefile6);
 
   /* print result to a file */
-  $afile6 = fopen($aggfile6, "w")
-    or status(STATUS_ERROR, "Can not open agg route file, aborting.");
+  if (($afile6 = fopen($aggfile6, "w")) == FALSE)
+  {
+    status(STATUS_ERROR, "Can not open agg route file, aborting.");
+    continue;
+  }
   for ($i = 0; $i < sizeof($aggregated_routes6); $i++)
   {
     fwrite($afile6, "$aggregated_routes6[$i]");
   }
   fclose($afile6);
-  chmod($aggfile6, 0644);
+  chmod($aggfile6, $cfg['cfgfiles']['umask']);
 
   return $asnlist6;
 }
@@ -239,7 +246,7 @@ function process_as($asn, $count, $object, $irr, $email)
 		fwrite($output, sprintf("%s\n", preg_replace("/[aA][sS]/", "", $asnlist[$i])));
   }
 	fclose($output);
-  chmod($asnfile, 0644);
+  chmod($asnfile, $cfg['cfgfiles']['umask']);
 
 	/* Perform CVS tracking */
   if ($o_cvs == 1 )
