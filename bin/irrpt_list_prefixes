@@ -83,18 +83,22 @@ $routes6 = array();
 //fetch only v4
 if( $o_4 == 1 && $o_6 == 0 )
 {
-  list($routes4, $asnlist4) = resolve_v4($irr, $object);
+  $resolve_v4_result = resolve_v4($irr, $object);
+  list($routes4, $asnlist4) = $resolve_v4_result;
 }
 //fetch only v6
 elseif( $o_6 == 1 && $o_4 == 0 )
 {
-  list($routes6, $asnlist6) = resolve_v6($irr, $object);
+  $resolve_v6_result = resolve_v6($irr, $object);
+  list($routes6, $asnlist6) = $resolve_v6_result;
 }
 //fetch both
 else
 {
-  list($routes4, $asnlist4) = resolve_v4($irr, $object);
-  list($routes6, $asnlist6) = resolve_v6($irr, $object);
+  $resolve_v4_result = resolve_v4($irr, $object);
+  list($routes4, $asnlist4) = $resolve_v4_result;
+  $resolve_v6_result = resolve_v6($irr, $object);
+  list($routes6, $asnlist6) = $resolve_v6_result;
 }
 
 //check if either result set came back with nothing

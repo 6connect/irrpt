@@ -82,7 +82,8 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
   $routes4 = array();
   $asnlist4 = array();
 
-  list($routes4, $asnlist4) = resolve_v4($irr, $object);
+  $resolve_v4_result = resolve_v4($irr, $object);
+  list($routes4, $asnlist4) = $resolve_v4_result;
 
 	/* Strip out excluded routes that can not be registered */
 	status(STATUS_NOTICE, "Filtering against excluded routes.");
@@ -108,7 +109,7 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
   /* print result to a file */
   $afile4 = fopen($aggfile4, "w")
     or status(STATUS_ERROR, "Can not open agg route file, aborting.");
-  for ($i = 1; $i < sizeof($aggregated_routes4); $i++)
+  for ($i = 0; $i < sizeof($aggregated_routes4); $i++)
   {
     fwrite($afile4, "$aggregated_routes4[$i]");
   }
@@ -124,7 +125,8 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
   $routes6 = array();
   $asnlist6 = array();
 
-  list($routes6, $asnlist6) = resolve_v6($irr, $object);
+  $resolve_v6_result = resolve_v6($irr, $object);
+  list($routes6, $asnlist6) = $resolve_v6_result;
 
 	/* Strip out excluded routes that can not be registered */
 	status(STATUS_NOTICE, "Filtering against excluded routes.");
@@ -150,7 +152,7 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
   /* print result to a file */
   $afile6 = fopen($aggfile6, "w")
     or status(STATUS_ERROR, "Can not open agg route file, aborting.");
-  for ($i = 1; $i < sizeof($aggregated_routes6); $i++)
+  for ($i = 0; $i < sizeof($aggregated_routes6); $i++)
   {
     fwrite($afile6, "$aggregated_routes6[$i]");
   }
@@ -288,7 +290,7 @@ while (!feof($irrdb))
 	$routefile6 = $cfg['paths']['db'] . $asn . ".6";
 	$aggfile6 = $routefile6 . $cfg['aggregate']['suffix'];
 
-  /* call v4 / v6 processing */
+  /* call v4 / v6 processing and aggregation */
   $asnlist4 = array();
   $asnlist6 = array();
 
