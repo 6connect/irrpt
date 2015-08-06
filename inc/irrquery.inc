@@ -269,6 +269,14 @@ class IRRQuery {
 
   function get_v4_routes_by_origin($origin)
   {
+
+    /* Prepend 'AS' to set if not provided */
+
+    if (preg_match("/^AS./", $origin) == 0) 
+    {
+      $origin = 'AS'.$origin;
+    }
+
     /* Anything cached? */
 
     if (($results = $this->_cache_query("origin", $origin)) != FALSE)
@@ -297,6 +305,14 @@ class IRRQuery {
 
   function get_v6_routes_by_origin($origin)
   {
+
+    /* Prepend 'AS' to set if not provided */
+
+    if (preg_match("/^AS./", $origin) == 0) 
+    {
+      $origin = 'AS'.$origin;
+    }
+
     /* Anything cached? */
 
     if (($results = $this->_cache_query("origin6", $origin)) != FALSE)
