@@ -10,7 +10,12 @@ function aggregate_routes($routefile)
 
   /* normalize and sort addresses and store in array */
   status(STATUS_NOTICE, "Aggregating routes - sorting...");
-  $addresses = file($routefile);
+  if (($addresses = file($routefile)) == FALSE)
+  {
+    status(STATUS_ERROR, "Unable to open irrdb config file, aborting.");
+    exit(-1);
+  }
+
   for ($i = 0; $i < count($addresses); $i++)
   {  
     if (_ip_version($addresses[$i]) == '6')
@@ -45,7 +50,7 @@ function aggregate_routes($routefile)
       $b = ip2long($next[0]) & (0xFFFFFFFF << (32 - $current[1]));
       if ($a == $b) 
       {
-        status(STATUS_WARNING, "Removing {$next[0]}/{$next[1]}, fits into: {$current[0]}/{$current[1]}");
+        status(STATUS_NOTICE, "Removing {$next[0]}/{$next[1]}, fits into: {$current[0]}/{$current[1]}");
         unset($addresses[$i]);
       }
       else
@@ -61,7 +66,7 @@ function aggregate_routes($routefile)
       $b = _v6_to_network($next[0], $current[1]);
       if ($a == $b) 
       {
-        status(STATUS_WARNING, "Removing {$next[0]}/{$next[1]}, fits into: {$current[0]}/{$current[1]}");
+        status(STATUS_NOTICE, "Removing {$next[0]}/{$next[1]}, fits into: {$current[0]}/{$current[1]}");
         unset($addresses[$i]);
       }
       else
