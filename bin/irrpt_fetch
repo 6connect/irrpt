@@ -190,8 +190,6 @@ function process_as($asn, $count, $object, $irr, $email)
     return;
   }
 
-  $count++;
-
 	if( $o_quiet == 0 )
 		status(STATUS_INFO, "Processing AS{$asn} (Record {$count})");
 
@@ -385,6 +383,7 @@ if ($o_asn != 0)
     $object = $o_asn;
   }
   $asn = $o_asn;
+  $count++;
   process_as($asn, $count, $object, $irr, 'none');
 }
 
@@ -411,6 +410,7 @@ else
     $object		= $results[1];
     $email		= $results[2];
 
+    $count++;
     process_as($asn, $count, $object, $irr, $email);
   }
   fclose($irrdb); 
