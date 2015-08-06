@@ -28,8 +28,8 @@ function track($file)
 	global $cfg;
 
 	if (($rev = $cvs->update($file)) == FALSE) {
-		status(STATUS_ERROR, "Error: Unable to perform CVS update.");
-		return FALSE;
+		status(STATUS_ERROR, "Error: Unable to perform CVS update, aborting.");
+		exit(1);
 	}
 
 	if ($rev['old'] == "0.00")
@@ -172,7 +172,7 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
   return $asnlist6;
 }
 
-function process_as($asn, $count, $object, $irr, $email)
+function process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $o_cvs)
 {
   global $cvs;
   global $cfg;
@@ -384,7 +384,7 @@ if ($o_asn != 0)
   }
   $asn = $o_asn;
   $count++;
-  process_as($asn, $count, $object, $irr, 'none');
+  process_as($asn, $count, $object, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
 }
 
 else 
@@ -411,7 +411,7 @@ else
     $email		= $results[2];
 
     $count++;
-    process_as($asn, $count, $object, $irr, $email);
+    process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $o_cvs);
   }
   fclose($irrdb); 
 }
