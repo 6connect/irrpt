@@ -394,6 +394,12 @@ class IRRQuery {
   {
     $routes = array();
 
+    /* Prepend 'AS' to set if not provided */
+    if (preg_match("/^AS./", $set) == 0) 
+    {
+      $set = 'AS'.$set;
+    }
+
     /* Query the set data */
     if ($recursive == TRUE)
       $this->_send("!i{$set},1\n");
