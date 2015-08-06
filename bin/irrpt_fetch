@@ -20,9 +20,7 @@ $cvs		= new CVS;		/* Open our CVS class */
 $count		= 0;
 $offset		= 0;
 $o_quiet	= 0;
-$o_verbose	= 0;
-$o_4		= 0;
-$o_6		= 0;
+$o_cvs	= 1;
 
 function track($file)
 {
@@ -84,7 +82,8 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
   $routes4 = array();
   $asnlist4 = array();
 
-  list($routes4, $asnlist4) = resolve_v4($irr, $object);
+  $resolve_v4_result = resolve_v4($irr, $object);
+  list($routes4, $asnlist4) = $resolve_v4_result;
 
 	/* Strip out excluded routes that can not be registered */
 	status(STATUS_NOTICE, "Filtering against excluded routes.");
@@ -102,6 +101,7 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
  	  fwrite($output4, sprintf("%s\n", $routes4[$i]));
   }
   fclose($output4);
+  chmod($routefile4, 0644);
 
 	/* Aggregate the route file */
 	status(STATUS_NOTICE, "Aggregating v4 routes.");
@@ -110,11 +110,12 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
   /* print result to a file */
   $afile4 = fopen($aggfile4, "w")
     or status(STATUS_ERROR, "Can not open agg route file, aborting.");
-  for ($i = 1; $i < sizeof($aggregated_routes4); $i++)
+  for ($i = 0; $i < sizeof($aggregated_routes4); $i++)
   {
     fwrite($afile4, "$aggregated_routes4[$i]");
   }
   fclose($afile4);
+  chmod($aggfile4, 0644);
 
   return $asnlist4;
 }
@@ -126,7 +127,8 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
   $routes6 = array();
   $asnlist6 = array();
 
-  list($routes6, $asnlist6) = resolve_v6($irr, $object);
+  $resolve_v6_result = resolve_v6($irr, $object);
+  list($routes6, $asnlist6) = $resolve_v6_result;
 
 	/* Strip out excluded routes that can not be registered */
 	status(STATUS_NOTICE, "Filtering against excluded routes.");
@@ -144,6 +146,7 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
 		fwrite($output6, sprintf("%s\n", $routes6[$i]));
   }
 	fclose($output6);
+  chmod($routefile6, 0644);
 
 	/* Aggregate the route file */
 	status(STATUS_NOTICE, "Aggregating v6 routes.");
@@ -152,115 +155,33 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
   /* print result to a file */
   $afile6 = fopen($aggfile6, "w")
     or status(STATUS_ERROR, "Can not open agg route file, aborting.");
-  for ($i = 1; $i < sizeof($aggregated_routes6); $i++)
+  for ($i = 0; $i < sizeof($aggregated_routes6); $i++)
   {
     fwrite($afile6, "$aggregated_routes6[$i]");
   }
   fclose($afile6);
+  chmod($aggfile6, 0644);
 
   return $asnlist6;
 }
 
-/* Set UID specified in the config file */
-if (posix_geteuid() == 0) {
-	if ($cfg['fetch']['set_uid']) {
-		if (!($user = posix_getpwnam($cfg['fetch']['set_uid'])))
-			$user = posix_getpwuid($cfg['fetch']['set_uid']);
-
-		if (!$user) {
-			printf("Unable to change to the specified UID, aborting.\n");
-			exit(1);
-		}
-
-		posix_setuid($user['uid']);
-		posix_seteuid($user['uid']);
-	}
-}
-
-
-/* Parse through the cmdline options. */
-for ($offset = 1; $offset < $_SERVER['argc']; $offset++) 
+function process_as($asn, $count, $object, $irr, $email)
 {
-	if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
-		break;
+  global $cvs;
+  global $cfg;
 
-	switch($_SERVER['argv'][$offset]) {
-	    case "-h":
-	    case "--help":
-		printf("Usage: %s [-h46qv] [asn]\n", $_SERVER['argv'][0]);
-		exit(1);
-	    case "-q":
-	    case "--quiet":
-		$o_quiet = 1;
-		break;
-	    case "-v":
-	    case "--verbose":
-		$o_verbose = 1;
-		break;
-	    case "-4":
-	    case "--4":
-		$o_4 = 1;
-		break;
-	    case "-6":
-	    case "--6":
-		$o_6 = 1;
-		break;
-	}
-}
+ /* Skip invalid ASNs */
+  if ($asn < 1)
+  {
+    status(STATUS_ERROR, "ASN $asn invalid, skipping.");
+    return;
+  }
 
-if (isset($_SERVER['argv'][$offset+0]))
-{
-	$o_asn = intval($_SERVER['argv'][$offset+0]);
-}
-
-/* Set Timezone */
-date_default_timezone_set($cfg['global']['timezone']);
-
-/* Set Memory Limit */
-ini_set("memory_limit",$cfg['global']['memory_limit']);
-
-/* Open the file with the list of IRR objects we will be tracking */
-if (!($irrdb = fopen($cfg['cfgfiles']['irrdb_list'], "r"))) 
-{
-	status(STATUS_ERROR, "Unable to open irrdb config file, aborting.");
-	exit(-1);
-}
-
-/* Establish a connection with our IRR Query whois server */
-if ($irr->connect($cfg['fetch']['host'], $cfg['fetch']['port']) == FALSE) 
-{
-	status(STATUS_ERROR, "Unable to connect to IRR Query whois server, aborting.");
-	exit(-1);
-}
-
-/* Optionally enable a local cache of prefixes per aut-num record */
-if ($cfg['fetch']['cache']) {
-	$irr->cache_set(TRUE);
-}
-
-/* If we don't want to query all IRR sources, set the new sources now */
-if ($cfg['fetch']['sources'] != "all")
-{
-	$irr->set_sources($cfg['fetch']['sources']);
-}
-
-/* Parse the IRRDB config file */
-while (!feof($irrdb)) 
-{
-  $line		= rtrim(fgets($irrdb, 256));
-
-  /* Skip comments and junk lines */
-  if ((strlen($line) == 0) || ($line[0] == "#"))
-    continue;
-
-  $results	= preg_split( "/[ \t]+/", $line);
-  $asn		= $results[0];
-  $object		= $results[1];
-  $email		= $results[2];
-
- /* Skip invalid ASNs, or ASNs we aren't interested in */
-  if (($asn < 1) || (($asn > 64512) && ($asn < 131072))|| ($o_asn && ($asn != $o_asn)))
-    continue;
+  if (($asn > 64512) && ($asn < 131072))
+  {
+    status(STATUS_ERROR, "ASN $asn invalid, skipping.");
+    return;
+  }
 
   $count++;
 
@@ -276,7 +197,7 @@ while (!feof($irrdb))
 	$routefile6 = $cfg['paths']['db'] . $asn . ".6";
 	$aggfile6 = $routefile6 . $cfg['aggregate']['suffix'];
 
-  /* call v4 / v6 processing */
+  /* call v4 / v6 processing and aggregation */
   $asnlist4 = array();
   $asnlist6 = array();
 
@@ -318,35 +239,174 @@ while (!feof($irrdb))
 		fwrite($output, sprintf("%s\n", preg_replace("/[aA][sS]/", "", $asnlist[$i])));
   }
 	fclose($output);
+  chmod($asnfile, 0644);
 
 	/* Perform CVS tracking */
-	status(STATUS_NOTICE, "Tracking data in CVS.");
-	$cvs->init($cfg['paths']['cvsroot']);
+  if ($o_cvs == 1 )
+  {
+	  status(STATUS_NOTICE, "Tracking data in CVS.");
+  	$cvs->init($cfg['paths']['cvsroot']);
 
-	$rev = track($routefile);
-	$rev = track($routefile4);
-	$rev = track($routefile6);
-	$rev = track($aggfile);
-	$rev = track($aggfile4);
-	$rev = track($aggfile6);
+	  $rev = track($routefile);
+  	$rev = track($routefile4);
+	  $rev = track($routefile6);
+  	$rev = track($aggfile);
+	  $rev = track($aggfile4);
+  	$rev = track($aggfile6);
 
-	/* Send e-mail updates */
-	status(STATUS_NOTICE, "Send update email.");
-	switch ($cfg['fetch']['emailonchange']) {
-	    case "both":
-		update_email($routefile, $email, $asn, $object, $rev, "Full");
-		update_email($aggfile, $email, $asn, $object, $rev, "Aggregated");
+	  /* Send e-mail updates */
+	  status(STATUS_NOTICE, "Send update email.");
+  	switch ($cfg['fetch']['emailonchange']) {
+	      case "both":
+		  update_email($routefile, $email, $asn, $object, $rev, "Full");
+	  	update_email($aggfile, $email, $asn, $object, $rev, "Aggregated");
+  		break;
+	      case "full":
+	  	update_email($routefile, $email, $asn, $object, $rev, "Full");
+  		break;
+	      case "aggregate":
+	  	update_email($aggfile, $email, $asn, $object, $rev, "Aggregated");
+  		break;
+	      case "none":
+	      case "no":
+		  break;
+	  }
+  }
+}
+
+
+/********** PROCESSING STARTS HERE *********/
+
+
+/* Set UID specified in the config file */
+if (posix_geteuid() == 0) {
+	if ($cfg['fetch']['set_uid']) {
+		if (!($user = posix_getpwnam($cfg['fetch']['set_uid'])))
+			$user = posix_getpwuid($cfg['fetch']['set_uid']);
+
+		if (!$user) {
+			printf("Unable to change to the specified UID, aborting.\n");
+			exit(1);
+		}
+
+		posix_setuid($user['uid']);
+		posix_seteuid($user['uid']);
+	}
+}
+
+
+/* Parse through the cmdline options. */
+for ($offset = 1; $offset < $_SERVER['argc']; $offset++) 
+{
+	if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
 		break;
-	    case "full":
-		update_email($routefile, $email, $asn, $object, $rev, "Full");
+
+	switch($_SERVER['argv'][$offset]) {
+	    case "-h":
+	    case "--help":
+		printf("Usage: %s [-h46qv] [-f file] [--nocvs] [asn]\n", $_SERVER['argv'][0]);
+		exit(1);
+	    case "-q":
+	    case "--quiet":
+		$o_quiet = 1;
 		break;
-	    case "aggregate":
-		update_email($aggfile, $email, $asn, $object, $rev, "Aggregated");
+	    case "-v":
+	    case "--verbose":
+		$o_verbose = 1;
 		break;
-	    case "none":
-	    case "no":
+	    case "--nocvs":
+		$o_cvs = 0;
+		break;
+	    case "-4":
+	    case "--4":
+		$o_4 = 1;
+		break;
+	    case "-6":
+	    case "--6":
+		$o_6 = 1;
+		break;
+	    case "-f":
+	    case "--file":
+		$o_irrdb = $_SERVER['argv'][$offset+1];
+    $offset++;
 		break;
 	}
+}
+
+if (isset($_SERVER['argv'][$offset+0]))
+{
+	$o_asn = intval($_SERVER['argv'][$offset+0]);
+}
+
+/* Set Timezone */
+date_default_timezone_set($cfg['global']['timezone']);
+
+/* Set Memory Limit */
+ini_set("memory_limit",$cfg['global']['memory_limit']);
+
+/* Open the file with the list of IRR objects we will be tracking */
+/* provided via command line or through the config file */
+if ($o_irrdb)
+{
+  $cfg['cfgfiles']['irrdb_list'] = $o_irrdb;
+}
+
+/* Establish a connection with our IRR Query whois server */
+if ($irr->connect($cfg['fetch']['host'], $cfg['fetch']['port']) == FALSE) 
+{
+	status(STATUS_ERROR, "Unable to connect to IRR Query whois server, aborting.");
+	exit(-1);
+}
+
+/* Optionally enable a local cache of prefixes per aut-num record */
+if ($cfg['fetch']['cache']) {
+	$irr->cache_set(TRUE);
+}
+
+/* If we don't want to query all IRR sources, set the new sources now */
+if ($cfg['fetch']['sources'] != "all")
+{
+	$irr->set_sources($cfg['fetch']['sources']);
+}
+
+if ($o_asn != 0)
+{
+  if (preg_match("/^AS./", $o_asn) == 0) 
+  {
+    $object= 'AS'.$o_asn;
+  } else {
+    $object = $o_asn;
+  }
+  $asn = $o_asn;
+  process_as($asn, $count, $object, $irr, 'none');
+}
+
+else 
+{
+
+  if (!($irrdb = fopen($cfg['cfgfiles']['irrdb_list'], "r"))) 
+  {
+	  status(STATUS_ERROR, "Unable to open irrdb config file, aborting.");
+	  exit(-1);
+  }
+
+  /* Parse the IRRDB config file */
+  while (!feof($irrdb)) 
+  {
+    $line		= rtrim(fgets($irrdb, 256));
+
+    /* Skip comments and junk lines */
+    if ((strlen($line) == 0) || ($line[0] == "#"))
+      continue;
+
+    $results	= preg_split( "/[ \t]+/", $line);
+    $asn		= $results[0];
+    $object		= $results[1];
+    $email		= $results[2];
+
+    process_as($asn, $count, $object, $irr, $email);
+  }
+  fclose($irrdb); 
 }
 
 if( $o_quiet == 1 )
@@ -354,6 +414,5 @@ if( $o_quiet == 1 )
     status(STATUS_INFO, "Completed processing of {$count} IRR object(s).");
 }
 
-fclose($irrdb); 
 
 ?>

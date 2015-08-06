@@ -27,15 +27,18 @@ function resolve_v4($irr, $object)
   $routes4 = $irr->get_v4_routes_by_origin($object);
   if ($routes4 == FALSE)
   {
-    $data = $irr->get_data_by_set($object, '4');
-    $routes4 = $data['routes4'];
-    $asnlist = $data['asns'];
+    if (($data = $irr->get_data_by_set($object, '4' )) != FALSE)
+    {
+      $routes4 = $data['routes4'];
+      $asnlist = $data['asns'];
+    }
   }
   else
   {
     $asnlist[0] = $object;
   }
-  return array($routes4, $asnlist);
+  $result = array($routes4, $asnlist);
+  return $result;
 }
 
 /* Figure out if we have an AUT-NUM or an AS-SET, and resolve it for v6 addresses */
@@ -45,15 +48,18 @@ function resolve_v6($irr, $object)
   $routes6 = $irr->get_v6_routes_by_origin($object);
   if ($routes6 == FALSE)
   {
-    $data = $irr->get_data_by_set($object, '6');
-    $routes6 = $data['routes6'];
-    $asnlist = $data['asns'];
+    if (($data = $irr->get_data_by_set($object, '6')) != FALSE)
+    {
+      $routes6 = $data['routes6'];
+      $asnlist = $data['asns'];
+    }
   }
   else
   {
     $asnlist[0] = $object;
   }
-  return array($routes6, $asnlist);
+  $result = array($routes6, $asnlist);
+  return $result;
 }
 
 
@@ -263,6 +269,14 @@ class IRRQuery {
 
   function get_v4_routes_by_origin($origin)
   {
+
+    /* Prepend 'AS' to set if not provided */
+
+    if (preg_match("/^AS./", $origin) == 0) 
+    {
+      $origin = 'AS'.$origin;
+    }
+
     /* Anything cached? */
 
     if (($results = $this->_cache_query("origin", $origin)) != FALSE)
@@ -291,6 +305,14 @@ class IRRQuery {
 
   function get_v6_routes_by_origin($origin)
   {
+
+    /* Prepend 'AS' to set if not provided */
+
+    if (preg_match("/^AS./", $origin) == 0) 
+    {
+      $origin = 'AS'.$origin;
+    }
+
     /* Anything cached? */
 
     if (($results = $this->_cache_query("origin6", $origin)) != FALSE)
@@ -328,6 +350,12 @@ class IRRQuery {
     $stats['missing_autnum_v6']  = 0;
 
     /* XXX - This should be caching results, maybe? */
+
+    /* Prepend 'AS' to set if not provided */
+    if (preg_match("/^AS./", $set) == 0) 
+    {
+      $set = 'AS'.$set;
+    }
 
     /* Query the set data */
     $this->_send("!i{$set},1\n");
@@ -381,6 +409,12 @@ class IRRQuery {
   function get_members_by_set($set, $recursive)
   {
     $routes = array();
+
+    /* Prepend 'AS' to set if not provided */
+    if (preg_match("/^AS./", $set) == 0) 
+    {
+      $set = 'AS'.$set;
+    }
 
     /* Query the set data */
     if ($recursive == TRUE)
