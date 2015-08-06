@@ -12,7 +12,7 @@ function aggregate_routes($routefile)
   status(STATUS_NOTICE, "Aggregating routes - sorting...");
   if (($addresses = file($routefile)) == FALSE)
   {
-    status(STATUS_ERROR, "Unable to open irrdb config file, aborting.");
+    status(STATUS_ERROR, "Unable to open route file config file, aborting.");
     exit(-1);
   }
 
