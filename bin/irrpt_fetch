@@ -165,124 +165,23 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
   return $asnlist6;
 }
 
-/* Set UID specified in the config file */
-if (posix_geteuid() == 0) {
-	if ($cfg['fetch']['set_uid']) {
-		if (!($user = posix_getpwnam($cfg['fetch']['set_uid'])))
-			$user = posix_getpwuid($cfg['fetch']['set_uid']);
-
-		if (!$user) {
-			printf("Unable to change to the specified UID, aborting.\n");
-			exit(1);
-		}
-
-		posix_setuid($user['uid']);
-		posix_seteuid($user['uid']);
-	}
-}
-
-
-/* Parse through the cmdline options. */
-for ($offset = 1; $offset < $_SERVER['argc']; $offset++) 
+function process_as($asn, $count, $object, $irr, $email)
 {
-	if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
-		break;
-
-	switch($_SERVER['argv'][$offset]) {
-	    case "-h":
-	    case "--help":
-		printf("Usage: %s [-h46qv] [-f file] [--nocvs] [asn]\n", $_SERVER['argv'][0]);
-		exit(1);
-	    case "-q":
-	    case "--quiet":
-		$o_quiet = 1;
-		break;
-	    case "-v":
-	    case "--verbose":
-		$o_verbose = 1;
-		break;
-	    case "--nocvs":
-		$o_cvs = 0;
-		break;
-	    case "-4":
-	    case "--4":
-		$o_4 = 1;
-		break;
-	    case "-6":
-	    case "--6":
-		$o_6 = 1;
-		break;
-	    case "-f":
-	    case "--file":
-		$o_irrdb = $_SERVER['argv'][$offset+1];
-    $offset++;
-		break;
-	}
-}
-
-if (isset($_SERVER['argv'][$offset+0]))
-{
-	$o_asn = intval($_SERVER['argv'][$offset+0]);
-}
-
-/* Set Timezone */
-date_default_timezone_set($cfg['global']['timezone']);
-
-/* Set Memory Limit */
-ini_set("memory_limit",$cfg['global']['memory_limit']);
-
-/* Open the file with the list of IRR objects we will be tracking */
-/* provided via command line or through the config file */
-if ($o_irrdb)
-{
-  $cfg['cfgfiles']['irrdb_list'] = $o_irrdb;
-}
-
-if (!($irrdb = fopen($cfg['cfgfiles']['irrdb_list'], "r"))) 
-{
-	status(STATUS_ERROR, "Unable to open irrdb config file, aborting.");
-	exit(-1);
-}
-
-/* Establish a connection with our IRR Query whois server */
-if ($irr->connect($cfg['fetch']['host'], $cfg['fetch']['port']) == FALSE) 
-{
-	status(STATUS_ERROR, "Unable to connect to IRR Query whois server, aborting.");
-	exit(-1);
-}
-
-/* Optionally enable a local cache of prefixes per aut-num record */
-if ($cfg['fetch']['cache']) {
-	$irr->cache_set(TRUE);
-}
-
-/* If we don't want to query all IRR sources, set the new sources now */
-if ($cfg['fetch']['sources'] != "all")
-{
-	$irr->set_sources($cfg['fetch']['sources']);
-}
-
-/* Parse the IRRDB config file */
-while (!feof($irrdb)) 
-{
-  $line		= rtrim(fgets($irrdb, 256));
-
-  /* Skip comments and junk lines */
-  if ((strlen($line) == 0) || ($line[0] == "#"))
-    continue;
-
-  $results	= preg_split( "/[ \t]+/", $line);
-  $asn		= $results[0];
-  $object		= $results[1];
-  $email		= $results[2];
+  global $cvs;
+  global $cfg;
 
  /* Skip invalid ASNs */
   if ($asn < 1)
+  {
     status(STATUS_ERROR, "ASN $asn invalid, skipping.");
-    continue;
+    return;
+  }
+
   if (($asn > 64512) && ($asn < 131072))
+  {
     status(STATUS_ERROR, "ASN $asn invalid, skipping.");
-    continue;
+    return;
+  }
 
   $count++;
 
@@ -375,11 +274,145 @@ while (!feof($irrdb))
   }
 }
 
+
+/********** PROCESSING STARTS HERE *********/
+
+
+/* Set UID specified in the config file */
+if (posix_geteuid() == 0) {
+	if ($cfg['fetch']['set_uid']) {
+		if (!($user = posix_getpwnam($cfg['fetch']['set_uid'])))
+			$user = posix_getpwuid($cfg['fetch']['set_uid']);
+
+		if (!$user) {
+			printf("Unable to change to the specified UID, aborting.\n");
+			exit(1);
+		}
+
+		posix_setuid($user['uid']);
+		posix_seteuid($user['uid']);
+	}
+}
+
+
+/* Parse through the cmdline options. */
+for ($offset = 1; $offset < $_SERVER['argc']; $offset++) 
+{
+	if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
+		break;
+
+	switch($_SERVER['argv'][$offset]) {
+	    case "-h":
+	    case "--help":
+		printf("Usage: %s [-h46qv] [-f file] [--nocvs] [asn]\n", $_SERVER['argv'][0]);
+		exit(1);
+	    case "-q":
+	    case "--quiet":
+		$o_quiet = 1;
+		break;
+	    case "-v":
+	    case "--verbose":
+		$o_verbose = 1;
+		break;
+	    case "--nocvs":
+		$o_cvs = 0;
+		break;
+	    case "-4":
+	    case "--4":
+		$o_4 = 1;
+		break;
+	    case "-6":
+	    case "--6":
+		$o_6 = 1;
+		break;
+	    case "-f":
+	    case "--file":
+		$o_irrdb = $_SERVER['argv'][$offset+1];
+    $offset++;
+		break;
+	}
+}
+
+if (isset($_SERVER['argv'][$offset+0]))
+{
+	$o_asn = intval($_SERVER['argv'][$offset+0]);
+}
+
+/* Set Timezone */
+date_default_timezone_set($cfg['global']['timezone']);
+
+/* Set Memory Limit */
+ini_set("memory_limit",$cfg['global']['memory_limit']);
+
+/* Open the file with the list of IRR objects we will be tracking */
+/* provided via command line or through the config file */
+if ($o_irrdb)
+{
+  $cfg['cfgfiles']['irrdb_list'] = $o_irrdb;
+}
+
+/* Establish a connection with our IRR Query whois server */
+if ($irr->connect($cfg['fetch']['host'], $cfg['fetch']['port']) == FALSE) 
+{
+	status(STATUS_ERROR, "Unable to connect to IRR Query whois server, aborting.");
+	exit(-1);
+}
+
+/* Optionally enable a local cache of prefixes per aut-num record */
+if ($cfg['fetch']['cache']) {
+	$irr->cache_set(TRUE);
+}
+
+/* If we don't want to query all IRR sources, set the new sources now */
+if ($cfg['fetch']['sources'] != "all")
+{
+	$irr->set_sources($cfg['fetch']['sources']);
+}
+
+if ($o_asn != 0)
+{
+  if (preg_match("/^AS./", $o_asn) == 0) 
+  {
+    $object= 'AS'.$o_asn;
+  } else {
+    $object = $o_asn;
+  }
+  $asn = $o_asn;
+  process_as($asn, $count, $object, $irr, 'none');
+}
+
+else 
+{
+
+  if (!($irrdb = fopen($cfg['cfgfiles']['irrdb_list'], "r"))) 
+  {
+	  status(STATUS_ERROR, "Unable to open irrdb config file, aborting.");
+	  exit(-1);
+  }
+
+  /* Parse the IRRDB config file */
+  while (!feof($irrdb)) 
+  {
+    $line		= rtrim(fgets($irrdb, 256));
+
+    /* Skip comments and junk lines */
+    if ((strlen($line) == 0) || ($line[0] == "#"))
+      continue;
+
+    $results	= preg_split( "/[ \t]+/", $line);
+    $asn		= $results[0];
+    $object		= $results[1];
+    $email		= $results[2];
+
+    process_as($asn, $count, $object, $irr, $email);
+  }
+  fclose($irrdb); 
+}
+
 if( $o_quiet == 1 )
 {
     status(STATUS_INFO, "Completed processing of {$count} IRR object(s).");
 }
 
-fclose($irrdb); 
 
 ?>
