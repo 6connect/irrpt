@@ -334,7 +334,7 @@ while (!feof($irrdb))
 	fclose($output);
 
 	/* Perform CVS tracking */
-  if ($o_cvs)
+  if ($o_cvs == 1 )
   {
 	  status(STATUS_NOTICE, "Tracking data in CVS.");
   	$cvs->init($cfg['paths']['cvsroot']);
