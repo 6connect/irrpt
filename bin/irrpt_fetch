@@ -300,7 +300,7 @@ if (posix_geteuid() == 0) {
 }
 
 // disable cvs tracking per config file option 
-if (($cfg['tools']['nocvs']) {
+if ($cfg['tools']['nocvs']) {
   $o_cvs = 0;
 }
 
