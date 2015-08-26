@@ -105,16 +105,6 @@ else
 if(empty($routes4)) { $routes4 = array(); }
 if(empty($routes6)) { $routes6 = array(); }
 
-//now lets take a quick break to convert v6 routes to all UPPER and clean up any duplicates - this may need to become a general function?
-for ($i = 0; $i < count($routes6); ++$i) {
-	$routes6[$i] = strtoupper($routes6[$i]);
-}
-
-$routes62 = array();
-foreach($routes6 as $val) {   
-	$routes62[$val] = TRUE;
-}
-$routes6 = array_keys($routes62); 
 
 $routes = array_merge($routes4, $routes6);
 

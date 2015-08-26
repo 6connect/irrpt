@@ -330,6 +330,7 @@ class IRRQuery {
     {
       $results = explode(" ", $results);
 
+      $results = array_map('strtolower', $results);
       natsort($results);
       $results = array_values(array_unique($results));
 
