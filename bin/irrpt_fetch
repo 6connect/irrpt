@@ -177,19 +177,6 @@ function process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $
   global $cvs;
   global $cfg;
 
- /* Skip invalid ASNs */
-  if ($asn < 1)
-  {
-    status(STATUS_ERROR, "ASN $asn invalid, skipping.");
-    return;
-  }
-
-  if (($asn > 64512) && ($asn < 131072))
-  {
-    status(STATUS_ERROR, "ASN $asn invalid, skipping.");
-    return;
-  }
-
 	if( $o_quiet == 0 )
 		status(STATUS_INFO, "Processing AS{$asn} (Record {$count})");
 
