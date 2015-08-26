@@ -9,6 +9,7 @@ require("{$currentpath}/../inc/aggregate.inc");
 require("{$currentpath}/../inc/cvs.inc");
 require("{$currentpath}/../inc/status.inc");
 require("{$currentpath}/../inc/ipv6.inc");
+require("{$currentpath}/../inc/utils.inc");
 
 
 $o_asn		= 0;			/* Default ASN to fetch: all */
@@ -21,6 +22,7 @@ $count		= 0;
 $offset		= 0;
 $o_quiet	= 0;
 $o_cvs	= 1;
+$o_irrdb = null;
 
 function track($file)
 {
@@ -183,11 +185,18 @@ function process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $
 	/* Figure out if we have an AUT-NUM or an AS-SET, and resolve it */
 	status(STATUS_NOTICE, "Querying IRR Object {$object}");
 
-  /* init files */
+	/* init files and ensure files are writeable by the effective user id*/
 	$routefile4 = $cfg['paths']['db'] . $asn . ".4";
+	check_file_perms($routefile4);
+
 	$aggfile4 = $routefile4 . $cfg['aggregate']['suffix'];
+	check_file_perms($aggfile4);
+
 	$routefile6 = $cfg['paths']['db'] . $asn . ".6";
+	check_file_perms($routefile6);
+
 	$aggfile6 = $routefile6 . $cfg['aggregate']['suffix'];
+	check_file_perms($aggfile6);
 
   /* call v4 / v6 processing and aggregation */
   $asnlist4 = array();
@@ -240,6 +249,7 @@ function process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $
   {
 	  status(STATUS_NOTICE, "Tracking data in CVS.");
   	$cvs->init($cfg['paths']['cvsroot']);
+	check_file_perms($cfg['paths']['cvsroot']);
 
 	  $rev = track($routefile);
   	$rev = track($routefile4);
@@ -267,7 +277,6 @@ function process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $
 	  }
   }
 }
-
 
 /********** PROCESSING STARTS HERE *********/
 
