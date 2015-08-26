@@ -229,6 +229,8 @@ function process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $
 	$aggfile = $routefile . $cfg['aggregate']['suffix'];
   system("cat {$routefile4} {$routefile6} > {$routefile}");
   system("cat {$aggfile4} {$aggfile6} > {$aggfile}");
+  chmod($routefile, $cfg['cfgfiles']['umask']);
+  chmod($aggfile, $cfg['cfgfiles']['umask']);
 
 	/* Log the ASNs behind this object, for future AS-PATH use */
   $asnlist = array_merge($asnlist4, $asnlist6);
