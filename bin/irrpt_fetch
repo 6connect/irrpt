@@ -179,21 +179,8 @@ function process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $
   global $cvs;
   global $cfg;
 
- /* Skip invalid ASNs */
-  if ($asn < 1)
-  {
-    status(STATUS_ERROR, "ASN $asn invalid, skipping.");
-    return;
-  }
-
-  if (($asn > 64512) && ($asn < 131072))
-  {
-    status(STATUS_ERROR, "ASN $asn invalid, skipping.");
-    return;
-  }
-
 	if( $o_quiet == 0 )
-		status(STATUS_INFO, "Processing AS{$asn} (Record {$count})");
+		status(STATUS_INFO, "Processing {$asn} (Record {$count})");
 
 	/* Figure out if we have an AUT-NUM or an AS-SET, and resolve it */
 	status(STATUS_NOTICE, "Querying IRR Object {$object}");
@@ -238,6 +225,8 @@ function process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $
 	$aggfile = $routefile . $cfg['aggregate']['suffix'];
   system("cat {$routefile4} {$routefile6} > {$routefile}");
   system("cat {$aggfile4} {$aggfile6} > {$aggfile}");
+  chmod($routefile, $cfg['cfgfiles']['umask']);
+  chmod($aggfile, $cfg['cfgfiles']['umask']);
 
 	/* Log the ASNs behind this object, for future AS-PATH use */
   $asnlist = array_merge($asnlist4, $asnlist6);
@@ -308,8 +297,10 @@ if (posix_geteuid() == 0) {
 	}
 }
 
-/* set any optional command line supplied vars */
-$o_irrdb = null;
+// disable cvs tracking per config file option 
+if ($cfg['tools']['nocvs']) {
+  $o_cvs = 0;
+}
 
 /* Parse through the cmdline options. */
 for ($offset = 1; $offset < $_SERVER['argc']; $offset++) 
@@ -349,11 +340,6 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++)
 	}
 }
 
-if (isset($_SERVER['argv'][$offset+0]))
-{
-	$o_asn = intval($_SERVER['argv'][$offset+0]);
-}
-
 /* Set Timezone */
 date_default_timezone_set($cfg['global']['timezone']);
 
@@ -385,22 +371,27 @@ if ($cfg['fetch']['sources'] != "all")
 	$irr->set_sources($cfg['fetch']['sources']);
 }
 
-if ($o_asn != 0)
+// check AS parameter if provided 
+if (isset($_SERVER['argv'][$offset+0]))
 {
-  if (preg_match("/^AS./", $o_asn) == 0) 
-  {
-    $object= 'AS'.$o_asn;
-  } else {
-    $object = $o_asn;
+  if (preg_match("/^AS./i", $_SERVER['argv'][$offset+0])) {
+  	$asn = strtoupper($_SERVER['argv'][$offset+0]);
+    $count++;
+    process_as($asn, $count, $asn, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
   }
-  $asn = $o_asn;
-  $count++;
-  process_as($asn, $count, $object, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
+  elseif ( (int)$_SERVER['argv'][$offset+0] > 0 && (int) $_SERVER['argv'][$offset+0] <= 4294967295) {
+  	$asn = "AS" . $_SERVER['argv'][$offset+0];
+    $count++;
+    process_as($asn, $count, $asn, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
+  }
+  else {
+    status(STATUS_ERROR, "Invalid AS or AS-SET input, aborting.");
+    exit(-1);
+  }
 }
 
 else 
 {
-
   if (!($irrdb = fopen($cfg['cfgfiles']['irrdb_list'], "r"))) 
   {
 	  status(STATUS_ERROR, "Unable to open irrdb config file, aborting.");

@@ -8,7 +8,7 @@ function exclusions_filter($file, $routes)
   global $exclusions;
 
   if (!$routes) {
-    status(STATUS_WARNING, "No routes processed in query.");
+    status(STATUS_WARNING, "No routes processed in exclusion query.");
     return FALSE;
   }
 

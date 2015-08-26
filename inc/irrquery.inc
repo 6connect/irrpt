@@ -37,6 +37,11 @@ function resolve_v4($irr, $object)
   {
     $asnlist[0] = $object;
   }
+
+  if ($routes4 == FALSE) {
+    status(STATUS_NOTICE, "No registered v4 routes found for this AS.");
+  }
+
   $result = array($routes4, $asnlist);
   return $result;
 }
@@ -58,6 +63,11 @@ function resolve_v6($irr, $object)
   {
     $asnlist[0] = $object;
   }
+
+  if($routes6 == FALSE) {
+    status(STATUS_NOTICE, "No registered v6 routes found for this AS.");
+  }
+
   $result = array($routes6, $asnlist);
   return $result;
 }
@@ -330,6 +340,7 @@ class IRRQuery {
     {
       $results = explode(" ", $results);
 
+      $results = array_map('strtolower', $results);
       natsort($results);
       $results = array_values(array_unique($results));
 
