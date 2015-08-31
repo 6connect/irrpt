@@ -42,7 +42,7 @@ function track($file)
 	return $rev;
 }
 
-function update_email($file, $email, $asn, $object, $rev, $type)
+function update_email($file, $email, $asString, $object, $rev, $type)
 {
 	global $cvs;
 	global $cfg;
@@ -56,14 +56,14 @@ function update_email($file, $email, $asn, $object, $rev, $type)
 	$headers .= "Date: " . date("r") . "\n";
 
 	if ($rev['old'] != "0.00") {
-	        $content .= "Changes for AS{$asn} (object {$object}) ({$type}):\n\n";
+	        $content .= "Changes for {$asString} (object {$object}) ({$type}):\n\n";
 	        $content .= $cvs->get_diff($file, $rev);
         	$content .= "\n\n";
-		$subject = $cfg['update']['subject'] . "AS{$asn} ({$type} Changes)";
+		$subject = $cfg['update']['subject'] . "{$asString} ({$type} Changes)";
 	} else
-		$subject = $cfg['update']['subject'] . "AS{$asn} ({$type} Initial Import)";
+		$subject = $cfg['update']['subject'] . "{$asString} ({$type} Initial Import)";
 
-        $content .= "Complete list for AS{$asn} (object {$object}) ({$type}):\n";
+        $content .= "Complete list for {$asString} (object {$object}) ({$type}):\n";
         $content .= $cvs->get_complete($file);
 
 
@@ -95,7 +95,7 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
 	status(STATUS_NOTICE, "Writing routes to local database.");
   if (($output4 = fopen($routefile4, "w")) == FALSE) 
   {
-    status(STATUS_WARNING, "Can not open IRRDB output file for {$asn}, skipping this record.");
+    status(STATUS_WARNING, "Can not open IRRDB output file for {$asString}, skipping this record.");
     continue;
   }
   for($i = 0; $i < sizeof($routes4); $i++)
@@ -144,7 +144,7 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
 	status(STATUS_NOTICE, "Writing routes to local database.");
   if (($output6 = fopen($routefile6, "w")) == FALSE) 
   {
-		status(STATUS_ERROR, "Can not open IRRDB output file for {$asn}, skipping this record.");
+		status(STATUS_ERROR, "Can not open IRRDB output file for {$asString}, skipping this record.");
   	continue;
   }
   for($i = 0; $i < sizeof($routes6); $i++)
@@ -174,25 +174,27 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
   return $asnlist6;
 }
 
-function process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $o_cvs)
+function process_as($asString, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $o_cvs)
 {
   global $cvs;
   global $cfg;
 
+  $asNumber = preg_replace("/[aA][sS]/", "", $asString);
+
 	if( $o_quiet == 0 )
-		status(STATUS_INFO, "Processing {$asn} (Record {$count})");
+		status(STATUS_INFO, "Processing {$asString} (Record {$count})");
 
 	/* Figure out if we have an AUT-NUM or an AS-SET, and resolve it */
 	status(STATUS_NOTICE, "Querying IRR Object {$object}");
 
 	/* init files and ensure files are writeable by the effective user id*/
-	$routefile4 = $cfg['paths']['db'] . $asn . ".4";
+	$routefile4 = $cfg['paths']['db'] . $asNumber . ".4";
 	check_file_perms($routefile4);
 
 	$aggfile4 = $routefile4 . $cfg['aggregate']['suffix'];
 	check_file_perms($aggfile4);
 
-	$routefile6 = $cfg['paths']['db'] . $asn . ".6";
+	$routefile6 = $cfg['paths']['db'] . $asNumber . ".6";
 	check_file_perms($routefile6);
 
 	$aggfile6 = $routefile6 . $cfg['aggregate']['suffix'];
@@ -221,7 +223,7 @@ function process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $
   }
 
   /* merge files into common v4 & v6 file */
-	$routefile = $cfg['paths']['db'] . $asn;
+	$routefile = $cfg['paths']['db'] . $asNumber;
 	$aggfile = $routefile . $cfg['aggregate']['suffix'];
   system("cat {$routefile4} {$routefile6} > {$routefile}");
   system("cat {$aggfile4} {$aggfile6} > {$aggfile}");
@@ -234,7 +236,7 @@ function process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $
 	status(STATUS_NOTICE, "Writing ASN list to local database.");
 	if (($output = fopen($asnfile, "w")) == FALSE) 
   {
-		status(STATUS_ERROR, "Can not open ASN list output file for {$asn}, skipping this record.");
+		status(STATUS_ERROR, "Can not open ASN list output file for {$asString}, skipping this record.");
 		continue;
 	}
 	for($i = 0; $i < sizeof($asnlist); $i++)
@@ -262,14 +264,14 @@ function process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $
 	  status(STATUS_NOTICE, "Send update email.");
   	switch ($cfg['fetch']['emailonchange']) {
 	      case "both":
-		  update_email($routefile, $email, $asn, $object, $rev, "Full");
-	  	update_email($aggfile, $email, $asn, $object, $rev, "Aggregated");
+		  update_email($routefile, $email, $asString, $object, $rev, "Full");
+	  	update_email($aggfile, $email, $asString, $object, $rev, "Aggregated");
   		break;
 	      case "full":
-	  	update_email($routefile, $email, $asn, $object, $rev, "Full");
+	  	update_email($routefile, $email, $asString, $object, $rev, "Full");
   		break;
 	      case "aggregate":
-	  	update_email($aggfile, $email, $asn, $object, $rev, "Aggregated");
+	  	update_email($aggfile, $email, $asString, $object, $rev, "Aggregated");
   		break;
 	      case "none":
 	      case "no":
@@ -375,14 +377,14 @@ if ($cfg['fetch']['sources'] != "all")
 if (isset($_SERVER['argv'][$offset+0]))
 {
   if (preg_match("/^AS./i", $_SERVER['argv'][$offset+0])) {
-  	$asn = strtoupper($_SERVER['argv'][$offset+0]);
+  	$asString = strtoupper($_SERVER['argv'][$offset+0]);
     $count++;
-    process_as($asn, $count, $asn, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
+    process_as($asString, $count, $asString, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
   }
   elseif ( (int)$_SERVER['argv'][$offset+0] > 0 && (int) $_SERVER['argv'][$offset+0] <= 4294967295) {
-  	$asn = "AS" . $_SERVER['argv'][$offset+0];
+  	$asString = "AS" . $_SERVER['argv'][$offset+0];
     $count++;
-    process_as($asn, $count, $asn, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
+    process_as($asString, $count, $asString, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
   }
   else {
     status(STATUS_ERROR, "Invalid AS or AS-SET input, aborting.");
@@ -408,12 +410,14 @@ else
       continue;
 
     $results	= preg_split( "/[ \t]+/", $line);
-    $asn		= $results[0];
+    $asNumber = $results[0];
     $object		= $results[1];
     $email		= $results[2];
 
+    $asString = "AS" . $asNumber;
+
     $count++;
-    process_as($asn, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $o_cvs);
+    process_as( $asString, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $o_cvs);
   }
   fclose($irrdb); 
 }
