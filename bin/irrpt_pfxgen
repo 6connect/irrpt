@@ -13,6 +13,9 @@ $o_pfxlen	    = $cfg['pfxgen']['default_pfxlen'];
 $o_pfxlen_v6	= $cfg['pfxgen']['default_pfxlen_v6'];
 $o_format	    = $cfg['pfxgen']['default_format'];
 
+$o_4 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
+$o_6 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
+
 
 function usage($progname)
 {
@@ -21,7 +24,7 @@ function usage($progname)
 	global $o_pfxlen_v6;
 	global $o_format;
 
-	printf("Usage: %s [-h] [-p pfxstr] [-l pfxlength] [-l6 pfxlength_v6] [-f format] <asn>\n",
+	printf("Usage: %s [-h46] [-p pfxstr] [-l pfxlength] [-l6 pfxlength_v6] [-f format] <asn>\n",
 		$progname);
 	printf("  pfxstr       - The prefix-list name format string (default: %s)\n", $o_pfxstr);
 	printf("  pfxlength    - The max length more-specific that will be allowed (default: %s)\n", $o_pfxlen);
@@ -61,6 +64,16 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 	    case "--pfxlength_v6":
                 $o_pfxlength_v6 = $_SERVER['argv'][++$offset];
 		break;
+
+      case "-4":
+      case "--4":
+    $o_4 = 1;
+    break;
+
+      case "-6":
+      case "--6":
+    $o_6 = 1;
+    break;
 
 	    case "-f":
 	    case "--format":
@@ -104,9 +117,7 @@ if (($_SERVER['argc'] - $offset) < 1)
 $asn = $_SERVER['argv'][$offset+0];
 
 
-
-
-if (pfxlist_generate($o_format, $asn, $o_pfxstr, $o_pfxlen, $o_pfxlen_v6) < 0) {
+if (pfxlist_generate($o_format, $asn, $o_pfxstr, $o_pfxlen, $o_pfxlen_v6, $o_4, $o_6) < 0) {
 	printf("Error generating prefix-list, aborting.\n");
 	exit(1);
 }

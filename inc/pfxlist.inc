@@ -1,10 +1,24 @@
 <?php
 
-function pfxlist_generate($format, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
+function pfxlist_generate($format, $asn, $pfxstr, $pfxlen, $pfxlen_v6, $o_4, $o_6)
 {
 	global $cfg;
 
-	$file = $cfg['paths']['db'] . $asn . $cfg['aggregate']['suffix'];
+  // only v4
+  if( $o_4 == 1 && $o_6 == 0 )
+  {
+	  $file = $cfg['paths']['db'] . $asn . '.4' . $cfg['aggregate']['suffix'];
+  }
+  // only v6
+  elseif( $o_6 == 1 && $o_4 == 0 )
+  {
+	  $file = $cfg['paths']['db'] . $asn . '.6' . $cfg['aggregate']['suffix'];
+  }
+  // v4 and v6
+  else
+  {
+	  $file = $cfg['paths']['db'] . $asn . $cfg['aggregate']['suffix'];
+  }
 
 	if (!file_exists($file) || !is_readable($file)) {
 		status(STATUS_ERROR, "Cannot open IRRDB prefix list file {$file}");
