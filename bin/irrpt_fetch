@@ -225,13 +225,15 @@ function process_as($asString, $count, $object, $irr, $email, $o_quiet, $o_4, $o
   /* merge files into common v4 & v6 file */
 	$routefile = $cfg['paths']['db'] . $asNumber;
 	$aggfile = $routefile . $cfg['aggregate']['suffix'];
-  system("cat {$routefile4} {$routefile6} > {$routefile}");
-  system("cat {$aggfile4} {$aggfile6} > {$aggfile}");
-  chmod($routefile, $cfg['cfgfiles']['umask']);
-  chmod($aggfile, $cfg['cfgfiles']['umask']);
+
+    concat_files($routefile4, $routefile6, $routefile);
+    concat_files($aggfile4, $aggfile6, $aggfile);
+
+	chmod($routefile, $cfg['cfgfiles']['umask']);
+	chmod($aggfile, $cfg['cfgfiles']['umask']);
 
 	/* Log the ASNs behind this object, for future AS-PATH use */
-  $asnlist = array_merge($asnlist4, $asnlist6);
+	$asnlist = array_merge($asnlist4, $asnlist6);
 	$asnfile = $routefile . $cfg['fetch']['asn_suffix'];
 	status(STATUS_NOTICE, "Writing ASN list to local database.");
 	if (($output = fopen($asnfile, "w")) == FALSE) 
