@@ -4,6 +4,11 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 {
 	global $cfg;
 
+	if(!check_asn_arg($asn, $asn_number, $asn_string)) {
+		status(STATUS_ERROR, "Invalid ASN {$asn}");
+		return FALSE;
+	}
+
 	$file = $cfg['paths']['db'] . $asn . $cfg['aggregate']['suffix'];
 
 	if (!file_exists($file) || !is_readable($file)) {
@@ -39,6 +44,9 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 function pfxlist_generate_juniper($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 {
 	$pfxname = sprintf($pfxstr, $asn);
+echo "pfxname: $pfxname\n";
+echo "pfxstr: $pfxstr\n";
+echo "asn: $asn\n";
 	global $cfg;
 
 	printf("policy-options {\n");
@@ -57,8 +65,8 @@ function pfxlist_generate_juniper($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
     }
     elseif (_ip_version($line) == '6')
     {
-		  printf("                route-filter %s upto /%d;\n", 
-			  $line, $pfxlen_v6);
+		$parts = explode("/", $line);
+		printf("                route-filter %s prefix-length-range /%d-/%d;\n", $line, $parts[1], $pfxlen_v6);
     }
     else
     {
