@@ -44,9 +44,6 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 function pfxlist_generate_juniper($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 {
 	$pfxname = sprintf($pfxstr, $asn);
-echo "pfxname: $pfxname\n";
-echo "pfxstr: $pfxstr\n";
-echo "asn: $asn\n";
 	global $cfg;
 
 	printf("policy-options {\n");
