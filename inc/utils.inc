@@ -1,4 +1,21 @@
 <?php
+function check_asn_arg($asn, &$asn_number, &$asn_string) {
+
+    if (preg_match("/^AS[0-9]+/i", $asn)) {
+        $asn_string = strtoupper($asn);
+        $asn_number = substr($asn, 2, strlen($asn));
+        return TRUE;
+    }
+    else {
+        if(preg_match("/^[0-9]+/", $asn)) {
+            $asn_number = $asn;
+            $asn_string = "AS".$asn;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
 
 function check_file_perms($file_name) {
 	/* get the effective uid for error message */
@@ -13,6 +30,37 @@ function check_file_perms($file_name) {
     }
 
 	return(TRUE);
+}
+
+/* concatenates srcFile1 and srcFile2 to dstFile */
+function concat_files($src_file1, $src_file2, $dst_file) {
+    $content_file1 = $content_file2 = null;
+
+    if(!$dst_fp = fopen("$dst_file", 'w+')) {
+        status(STATUS_ERROR, "Error: Unable to open $dst_file for writing, aborting.");
+        return(FALSE);
+    }
+
+    if (file_exists($src_file1)) {
+        $content_file1 = file_get_contents("$src_file1");
+    }
+    else { status(STATUS_INFO, "Warning: Unable to read $src_file1.");
+    }
+
+    if (file_exists($src_file2)) {
+        $content_file2 = file_get_contents("$src_file2");
+    }
+    else { status(STATUS_INFO, "Warning: Unable to read $src_file1."); }
+
+    if(fwrite($dst_fp, $content_file1) === FALSE) {
+        status(STATUS_INFO, "Warning: File content $src_file1 not written to $dst_file.");
+    }
+
+    if(fwrite($dst_fp, $content_file2) === FALSE) {
+        status(STATUS_INFO, "Warning: File content $src_file2 not written to $dst_file.");
+    }
+
+    fclose($dst_fp);
 }
 
 ?>

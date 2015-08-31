@@ -4,21 +4,26 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxlen, $pfxlen_v6, $o_4, $o_
 {
 	global $cfg;
 
-  // only v4
-  if( $o_4 == 1 && $o_6 == 0 )
-  {
-	  $file = $cfg['paths']['db'] . $asn . '.4' . $cfg['aggregate']['suffix'];
-  }
-  // only v6
-  elseif( $o_6 == 1 && $o_4 == 0 )
-  {
-	  $file = $cfg['paths']['db'] . $asn . '.6' . $cfg['aggregate']['suffix'];
-  }
-  // v4 and v6
-  else
-  {
-	  $file = $cfg['paths']['db'] . $asn . $cfg['aggregate']['suffix'];
-  }
+    if(!check_asn_arg($asn, $asn_number, $asn_string)) {
+        status(STATUS_ERROR, "Invalid ASN {$asn}");
+        return FALSE;
+    }
+
+	// only v4
+	if( $o_4 == 1 && $o_6 == 0 )
+	{
+		$file = $cfg['paths']['db'] . $asn_number . '.4' . $cfg['aggregate']['suffix'];
+	}
+	// only v6
+	elseif( $o_6 == 1 && $o_4 == 0 )
+	{
+		$file = $cfg['paths']['db'] . $asn_number . '.6' . $cfg['aggregate']['suffix'];
+	}
+	// v4 and v6
+	else
+	{
+		$file = $cfg['paths']['db'] . $asn_number . $cfg['aggregate']['suffix'];
+	}
 
 	if (!file_exists($file) || !is_readable($file)) {
 		status(STATUS_ERROR, "Cannot open IRRDB prefix list file {$file}");
@@ -32,16 +37,16 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxlen, $pfxlen_v6, $o_4, $o_
 
 	switch ($format) {
 	    case 'cisco':
-		pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6);
+		pfxlist_generate_cisco($pfxfile, $asn_number, $pfxstr, $pfxlen, $pfxlen_v6);
 		break;
 	    case 'juniper':
-		pfxlist_generate_juniper($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6);
+		pfxlist_generate_juniper($pfxfile, $asn_number, $pfxstr, $pfxlen, $pfxlen_v6);
 		break;
 	    case 'extreme':
-		pfxlist_generate_extreme($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6);
+		pfxlist_generate_extreme($pfxfile, $asn_number, $pfxstr, $pfxlen, $pfxlen_v6);
 		break;
 	    case 'force10':
-		pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6);
+		pfxlist_generate_force10($pfxfile, $asn_number, $pfxstr, $pfxlen, $pfxlen_v6);
 		break;
 	    default:
 		break;
@@ -71,8 +76,9 @@ function pfxlist_generate_juniper($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
     }
     elseif (_ip_version($line) == '6')
     {
-		  printf("                route-filter %s upto /%d;\n", 
-			  $line, $pfxlen_v6);
+        $subnet_parts = explode("/", $line);
+        printf("                route-filter %s prefix-length-range /%d-/%d;\n", 
+			$line, $subnet_parts[1], $pfxlen_v6);
     }
     else
     {

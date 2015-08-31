@@ -6,6 +6,7 @@ require("{$currentpath}/../conf/irrpt.conf");
 require("{$currentpath}/../inc/pfxlist.inc");
 require("{$currentpath}/../inc/ipv6.inc");
 require("{$currentpath}/../inc/status.inc");
+require("{$currentpath}/../inc/utils.inc");
 
 /* Load our defaults from the master config file */
 $o_pfxstr	    = $cfg['pfxgen']['default_pfxstr'];
