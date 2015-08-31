@@ -57,44 +57,57 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxlen, $pfxlen_v6, $o_4, $o_
 
 function pfxlist_generate_juniper($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 {
-	$pfxname = sprintf($pfxstr, $asn);
 	global $cfg;
-
-	printf("policy-options {\n");
-	printf("    replace: policy-statement %s {\n", $pfxname);
-	printf("        term prefixes {\n");
-	printf("            from {\n");
+	$v4_list = $v6_list = array();
+	$v4_policy_name = sprintf($pfxstr, $asn);
+	$v6_policy_name = sprintf($pfxstr . ":V6", $asn);
 
 	while (!feof($pfxfile)) {
-		if (!($line = rtrim(fgets($pfxfile, 64))))
-			continue;
+			if (!($line = rtrim(fgets($pfxfile, 64))))
+				continue;
 
-    if (_ip_version($line) == '4')
-    {
-		  printf("                route-filter %s upto /%d;\n", 
-			  $line, $pfxlen);
-    }
-    elseif (_ip_version($line) == '6')
-    {
-        $subnet_parts = explode("/", $line);
-        printf("                route-filter %s prefix-length-range /%d-/%d;\n", 
-			$line, $subnet_parts[1], $pfxlen_v6);
-    }
-    else
-    {
-      status(STATUS_ERROR, "Prefix not recognized: {$line}");
-      return FALSE;
-    }
+		if (_ip_version($line) == '4')
+		{
+			  $formatted_line = sprintf("                route-filter %s upto /%d;\n", $line, $pfxlen);
+			$v4_list[] = $formatted_line;
+		}
+		elseif (_ip_version($line) == '6')
+		{
+			$subnet_parts = explode("/", $line);
+			$formatted_line = sprintf("                route-filter %s prefix-length-range /%d-/%d;\n", $line, $subnet_parts[1], $pfxlen_v6);
+			$v6_list[] = $formatted_line;
+		}
+		else
+		{
+		  status(STATUS_ERROR, "Prefix not recognized: {$line}");
+		  return FALSE;
+		}
 	}
 
-	printf("            }\n");
-	printf("            then next policy;\n");
-	printf("        }\n");
-	printf("        then reject;\n");
-	printf("    }\n");
-	printf("}\n");
-
+	pfxlist_print_juniper($v4_policy_name, $v4_list);
+	pfxlist_print_juniper($v6_policy_name, $v6_list);
 	return 0;
+}
+
+function pfxlist_print_juniper($policy_name, $list) {
+
+	if(count($list > 0)) {
+		printf("policy-options {\n");
+		printf("    replace: policy-statement %s {\n", $policy_name);
+		printf("        term prefixes {\n");
+		printf("            from {\n");
+
+		foreach($list as $line) {
+			print $line;
+		}
+		printf("            }\n");
+		printf("            then next policy;\n");
+		printf("        }\n");
+		printf("        then reject;\n");
+		printf("    }\n");
+		printf("}\n");
+	}
+
 }
 
 function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
