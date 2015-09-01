@@ -67,7 +67,7 @@ function update_email($file, $email, $asString, $object, $rev, $type)
         $content .= $cvs->get_complete($file);
 
 
-	if (!($email == "-" || $email == "none" || $email == "NULL")) {
+	if (!($email == "-" || $email == "none" || isset($email))) {
 		status(STATUS_INFO, "   - Sending update notification to {$email}");
 	        mail($email, $subject, $content, $headers);
 	}
@@ -263,18 +263,18 @@ function process_as($asString, $count, $object, $irr, $email, $o_quiet, $o_4, $o
   	$rev = track($aggfile6);
 
 	  /* Send e-mail updates */
-	  status(STATUS_NOTICE, "Send update email.");
+	status(STATUS_NOTICE, "Send update email.");
   	switch ($cfg['fetch']['emailonchange']) {
-	      case "both":
-		  update_email($routefile, $email, $asString, $object, $rev, "Full");
-	  	update_email($aggfile, $email, $asString, $object, $rev, "Aggregated");
-  		break;
-	      case "full":
-	  	update_email($routefile, $email, $asString, $object, $rev, "Full");
-  		break;
-	      case "aggregate":
-	  	update_email($aggfile, $email, $asString, $object, $rev, "Aggregated");
-  		break;
+		case "both":
+			update_email($routefile, $email, $asString, $object, $rev, "Full");
+			update_email($aggfile, $email, $asString, $object, $rev, "Aggregated");
+			break;
+		case "full":
+			update_email($routefile, $email, $asString, $object, $rev, "Full");
+			break;
+		case "aggregate":
+			update_email($aggfile, $email, $asString, $object, $rev, "Aggregated");
+			break;
 	      case "none":
 	      case "no":
 		  break;
@@ -414,7 +414,8 @@ else
     $results	= preg_split( "/[ \t]+/", $line);
     $asNumber = $results[0];
     $object		= $results[1];
-    $email		= $results[2];
+    if(isset($results[2])) { $email        = $results[2]; } //email is optional in the config
+	else { $email = null; }
 
     $asString = "AS" . $asNumber;
 
