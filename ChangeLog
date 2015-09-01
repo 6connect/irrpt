@@ -1,3 +1,13 @@
+/***********************************************************************/
+/* IRRPT - Sponsored by TorIX - The Toronto Internet Exchange          */
+/***********************************************************************/
+
+1.29 - August 30 2015
+ * Removed calls to system to concatenate v4/v6 route files.  Now performed by php function in utils.inc.
+ * Provided support to leave email in irrdb.conf blank if the user wishes no email updates for a particular as/object.
+ * Fixed support for separate (correct) v4 and v6 prefix list for Juniper config.
+ * Added AS validation/checking for pfxgen.
+
 1.29 -  June 30 2015
 
  * Implemented aggregate fntionality and removed dependency on the
