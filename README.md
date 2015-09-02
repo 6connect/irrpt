@@ -3,16 +3,17 @@
 * Originally written by Richard A Steenbergen <ras@e-gerbil.net>
 * Older versions can be found on sourceforge at [http://sourceforge.net/projects/irrpt/](http://sourceforge.net/projects/irrpt/)
 * IPv6 support added by Elisa Jasinska <elisa@bigwaveit.org> for version 1.29 
+* Bug Fixes provided by Anna Claiborne <domino@theshell.org> for version 1.29 
 
 Summary
 -------
 
 A collection of tools which allow ISPs to easily track, manage, and 
-utilize BGP routing information stored in Internet Routing Registry (IRR) 
-databases. Some of these tools include automated IRR data retrieval, 
-update tracking via CVS, e-mail notifications, e-mail based notification 
-for ISPs who still do human processing of routing information, and hooks 
-for automatically deploying prefix-lists on routers.
+utilize IPv4 and IPv6 BGP routing information stored in Internet Routing 
+Registry (IRR) databases. Some of these tools include automated IRR data 
+retrieval, update tracking via CVS, e-mail notifications, e-mail based 
+notification for ISPs who still do human processing of routing information, 
+and hooks for automatically deploying prefix-lists on routers.
 
 
 Purpose
@@ -67,12 +68,8 @@ Requirements
 ------------
 
 * CVS                     (http://www.gnu.org/software/cvs/)
-* PHP          >= 4.3     (http://www.php.net/downloads.php)
+* PHP          >= 5.6     (http://www.php.net/downloads.php)
 * CVSweb       Optional   (http://people.freebsd.org/~scop/cvsweb/)
-
-Note to FreeBSD users: If you are building from ports you probably want to 
-use PHP 5 and make certain that you have compiled the POSIX extension 
-functions.
 
 Documentation
 -------------
@@ -80,7 +77,7 @@ Documentation
 The operation of IRR PowerTools is broken down into the following distinct 
 operations:
 
-### irrpt_fetch
+################ irrpt_fetch ###################
 
     $ bin/irrpt_fetch -h
     Usage: bin/irrpt_fetch [-hqv] [asn]
@@ -94,6 +91,11 @@ Verbose mode:
 
     $ bin/irrpt_fetch -v 42
     ...
+
+irrpt_fetch uses the list of objects provided by irrdb.conf by
+default.  To track additional objects, simply add them to the 
+irrdb.conf file.  To fetch objects for a specific AS, or specific
+object, provide this as an argument per the above example.
 
 This is the stage where you pull data for the objects that you are 
 tracking off of the IRR, and store them locally. Inside the fetch
@@ -110,7 +112,7 @@ process, the following steps are performed:
    alerting everyone that the routing change has been successfully 
    processed.
 
-### irrpt_nag
+################ irrpt_nag ###################
 
     $ bin/irrpt_nag -h
     Usage: bin/irrpt_nag [-hp] [-c config] [-m message] <previous rev> <current rev>
@@ -125,7 +127,7 @@ Unfortunately many of the largest ISPs still use human processing of
 prefix lists, so for the immediate future you will probably still be 
 getting a lot of use out of this tool.
 
-### irrpt_pfxgen
+################ irrpt_pfxgen ###################
 
     $ bin/irrpt_pfxgen -h
     Usage: bin/irrpt_pfxgen [-h] [-p pfxstr] [-l pfxlength] [-l pfxlength_v6] [-f format] <asn>
@@ -192,7 +194,7 @@ status data, not deploying configurations.
 
 Many other systems exist as well.
 
-### irrpt_list_prefixes
+################ irrpt_list_prefixes ###################
 
 Show prefixes for a given AS-SET, in unaggregated or aggregated form.
 
@@ -221,7 +223,7 @@ Verbose mode:
     ...
 
 
-### irrpt_list_ases
+################ irrpt_list_ases ###################
 
 Show AS numbers for a given AS-SET.
 
@@ -317,10 +319,8 @@ A) Yes it would. However, the purpose of this project is to open up the
 
 Q) Does this tool support RPSLng?
 
-A) Not right now. We're making the basic assumption of IPv4 routes only, 
-   especially in so far as the aggregate tool goes. This may change in 
-   the future (see the TODO file). Feel free to let me know your strong 
-   interest (or lack thereof) on this issue.
+A) Not right now. This may change in the future (see the TODO file). Feel 
+   free to let me know your strong interest (or lack thereof) on this issue.
 
 Q) Does this tool generate AS-PATH filters?
 
