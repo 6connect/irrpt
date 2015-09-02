@@ -6,18 +6,55 @@ require("{$currentpath}/../conf/irrpt.conf");
 require("{$currentpath}/../inc/irrquery.inc");
 require("{$currentpath}/../inc/status.inc");
 
+$o_4 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
+$o_6 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
+
 $irr		= new IRRQuery;	/* Open our IRRQuery class */
 $done		= array();
 
 
-function explorer($object, $depth)
+function explorer($object, $depth, $o_4, $o_6)
 {
 	global $irr;
 	global $done;
 
-	printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
 
+  // if this is an AS number, not an object
+  // see if it holds any 4/6 prefixes 
+  if (preg_match("/AS\d./", $object))
+  {
+
+    // the v4 switch is enabled, only pring ASes in the set with registered v4 prefixes 
+    if( $o_4 == 1 && $o_6 == 0 )
+    {
+      $resolve_v4_result = resolve_v4($irr, $object);
+      list($routes4, $asnlist4) = $resolve_v4_result;
+      if (sizeof($routes4) > 0 )
+      {
+	      printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
+      }
+    }
+
+    // the v6 switch is enabled, only pring ASes in the set with registered v6 prefixes 
+    elseif( $o_6 == 1 && $o_4 == 0 )
+    {
+      $resolve_v6_result = resolve_v6($irr, $object);
+      list($routes6, $asnlist6) = $resolve_v6_result;
+      if (sizeof($routes6) > 0 )
+      {
+	      printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
+      }
+    }
+
+    // if no switch is enabled, print the entire set 
+    else {
+	    printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
+    }
+  }
+
+  // expand object 
 	if (preg_match("/AS-./", $object)) {
+	  printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
 		if (!isset($done[strval($object)])) {
 			$done[strval($object)] = true;
 
@@ -29,7 +66,7 @@ function explorer($object, $depth)
 			printf("\n%s%s\n", str_repeat("  ", $depth), "{");
 
 			for($i=0;$i<sizeof($members);$i++)
-				explorer($members[$i], $depth+1);
+				explorer($members[$i], $depth+1, $o_4, $o_6);
 
 			printf("%s%s\n", str_repeat("  ", $depth), "}");
 		} else
@@ -51,13 +88,23 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 	switch($_SERVER['argv'][$offset]) {
 	    case "-h":
 	    case "--help":
-		printf("Usage: %s [-h] <object>\n", $_SERVER['argv'][0]);
+		printf("Usage: %s [-h46] <object>\n", $_SERVER['argv'][0]);
 		exit(1);
+
+      case "-4":
+      case "--4":
+    $o_4 = 1;
+    break;
+
+      case "-6":
+      case "--6":
+    $o_6 = 1;
+    break;
 	}
 }
 
 if (($_SERVER['argc'] - $offset) < 1) {
-	printf("Usage: %s [-h] <object>\n", $_SERVER['argv'][0]);
+	printf("Usage: %s [-h46] <object>\n", $_SERVER['argv'][0]);
 	exit(1);
 }
 
@@ -82,6 +129,6 @@ if ($irr->connect($cfg['fetch']['host'], $cfg['fetch']['port']) == FALSE) {
 if ($cfg['fetch']['sources'] != "all")
 	$irr->set_sources($cfg['fetch']['sources']);
 
-explorer($object, 0);
+explorer($object, 0, $o_4, $o_6);
 
 ?>
