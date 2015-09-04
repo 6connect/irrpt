@@ -88,7 +88,7 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
   list($routes4, $asnlist4) = $resolve_v4_result;
   if (sizeof($routes4) <= 0 )
   {
-    status(STATUS_WARNING, "No registered v4 routes found."
+    status(STATUS_WARNING, "No registered v4 routes found.");
   }
 
 	/* Strip out excluded routes that can not be registered */
@@ -141,7 +141,7 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
   list($routes6, $asnlist6) = $resolve_v6_result;
   if (sizeof($routes6) <= 0 )
   {
-    status(STATUS_WARNING, "No registered v6 routes found."
+    status(STATUS_WARNING, "No registered v6 routes found.");
   }
 
 	/* Strip out excluded routes that can not be registered */
