@@ -48,8 +48,9 @@ function update_email($file, $email, $asString, $object, $rev, $type)
 	global $cfg;
 	$content = "";
 
-	if ($rev['old'] == $rev['new'])
+	if ($rev['old'] == $rev['new']) {
 		return;
+	}
 
 	$headers  = "From: {$cfg['update']['from']}\n";
 	$headers .= "Reply-To: {$cfg['update']['reply-to']}\n";
@@ -67,7 +68,7 @@ function update_email($file, $email, $asString, $object, $rev, $type)
         $content .= $cvs->get_complete($file);
 
 
-	if (!($email == "-" || $email == "none" || isset($email))) {
+	if (!($email == "-" || $email == "none" || !isset($email))) {
 		status(STATUS_INFO, "   - Sending update notification to {$email}");
 	        mail($email, $subject, $content, $headers);
 	}
