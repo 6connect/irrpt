@@ -108,7 +108,7 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
  	  fwrite($output4, sprintf("%s\n", $routes4[$i]));
   }
   fclose($output4);
-  chmod($routefile4, $cfg['cfgfiles']['umask']);
+  update_file_permissions($routefile4, $cfg['cfgfiles']['umask']);
 
 	/* Aggregate the route file */
 	status(STATUS_NOTICE, "Aggregating v4 routes.");
@@ -126,7 +126,7 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
     fwrite($afile4, "$aggregated_routes4[$i]");
   }
   fclose($afile4);
-  chmod($aggfile4, $cfg['cfgfiles']['umask']);
+  update_file_permissions($aggfile4, $cfg['cfgfiles']['umask']);
 
   return $asnlist4;
 }
@@ -161,7 +161,7 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
 		fwrite($output6, sprintf("%s\n", $routes6[$i]));
   }
 	fclose($output6);
-  chmod($routefile6, $cfg['cfgfiles']['umask']);
+  update_file_permissions($routefile6, $cfg['cfgfiles']['umask']);
 
 	/* Aggregate the route file */
 	status(STATUS_NOTICE, "Aggregating v6 routes.");
@@ -178,7 +178,7 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
     fwrite($afile6, "$aggregated_routes6[$i]");
   }
   fclose($afile6);
-  chmod($aggfile6, $cfg['cfgfiles']['umask']);
+  update_file_permissions($aggfile6, $cfg['cfgfiles']['umask']);
 
   return $asnlist6;
 }
@@ -238,8 +238,8 @@ function process_as($asString, $count, $object, $irr, $email, $o_quiet, $o_4, $o
     concat_files($routefile4, $routefile6, $routefile);
     concat_files($aggfile4, $aggfile6, $aggfile);
 
-	chmod($routefile, $cfg['cfgfiles']['umask']);
-	chmod($aggfile, $cfg['cfgfiles']['umask']);
+	update_file_permissions($routefile, $cfg['cfgfiles']['umask']);
+	update_file_permissions($aggfile, $cfg['cfgfiles']['umask']);
 
 	/* Log the ASNs behind this object, for future AS-PATH use */
 	$asnlist = array_merge($asnlist4, $asnlist6);
@@ -255,7 +255,7 @@ function process_as($asString, $count, $object, $irr, $email, $o_quiet, $o_4, $o
 		fwrite($output, sprintf("%s\n", preg_replace("/[aA][sS]/", "", $asnlist[$i])));
   }
 	fclose($output);
-  chmod($asnfile, $cfg['cfgfiles']['umask']);
+  update_file_permissions($asnfile, $cfg['cfgfiles']['umask']);
 
 	/* Perform CVS tracking */
   if ($o_cvs == 1 )

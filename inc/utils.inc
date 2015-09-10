@@ -1,4 +1,24 @@
 <?php
+/* checks file ownership and updates permissions on specified files, if possible */
+function update_file_permissions($file, $permission) {
+    /* get the effective uid for error message */
+    $e_id = posix_geteuid();
+	$o_id = fileowner($file);
+
+	// if the file uid is the same as effective uid, update file permissions 
+	//else throw a warning
+echo "eid: $e_id\n";
+echo "oid: $o_id\n";
+
+	if($e_id == $o_id) {
+		chmod($file, $permission);
+	}
+	else {
+		status(STATUS_INFO, "Warning: Unable to update file permissions for $file.");
+	}
+}
+
+/* performs basic verification on ASN and returns a numeric and string version */
 function check_asn_arg($asn, &$asn_number, &$asn_string) {
 
     if (preg_match("/^AS[0-9]+/i", $asn)) {
@@ -17,6 +37,7 @@ function check_asn_arg($asn, &$asn_number, &$asn_string) {
     return FALSE;
 }
 
+/* checks if the effective user can write to the specified file */
 function check_file_perms($file_name) {
 	/* get the effective uid for error message */
 	$e_id = posix_geteuid();
