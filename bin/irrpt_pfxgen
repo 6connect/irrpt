@@ -10,6 +10,7 @@ require("{$currentpath}/../inc/utils.inc");
 
 /* Load our defaults from the master config file */
 $o_pfxstr	    = $cfg['pfxgen']['default_pfxstr'];
+$o_pfxstr_v6  = $cfg['pfxgen']['default_pfxstr_v6'];
 $o_pfxlen	    = $cfg['pfxgen']['default_pfxlen'];
 $o_pfxlen_v6	= $cfg['pfxgen']['default_pfxlen_v6'];
 $o_format	    = $cfg['pfxgen']['default_format'];
@@ -21,13 +22,15 @@ $o_6 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
 function usage($progname)
 {
 	global $o_pfxstr;
+	global $o_pfxstr_v6;
 	global $o_pfxlen;
 	global $o_pfxlen_v6;
 	global $o_format;
 
-	printf("Usage: %s [-h46] [-p pfxstr] [-l pfxlength] [-l6 pfxlength_v6] [-f format] <asn>\n",
+	printf("Usage: %s [-h46] [-p pfxstr] [-p pfxstr_v6] [-l pfxlength] [-l6 pfxlength_v6] [-f format] <asn>\n",
 		$progname);
 	printf("  pfxstr       - The prefix-list name format string (default: %s)\n", $o_pfxstr);
+	printf("  pfxstr_v6    - The prefix-list name format string (default: %s)\n", $o_pfxstr_v6);
 	printf("  pfxlength    - The max length more-specific that will be allowed (default: %s)\n", $o_pfxlen);
 	printf("  pfxlength_v6 - The max length more-specific that will be allowed for v6 (default: %s)\n", $o_pfxlen_v6);
 	printf("  format       - The output format for a specific router type (default: %s)\n", $o_format);
@@ -54,6 +57,11 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 	    case "-p":
 	    case "--pfxstr":
                 $o_pfxstr = $_SERVER['argv'][++$offset];
+		break;
+
+	    case "-p6":
+	    case "--pfxstr_v6":
+                $o_pfxstr_v6 = $_SERVER['argv'][++$offset];
 		break;
 
 	    case "-l":
@@ -118,7 +126,7 @@ if (($_SERVER['argc'] - $offset) < 1)
 $asn = $_SERVER['argv'][$offset+0];
 
 
-if (pfxlist_generate($o_format, $asn, $o_pfxstr, $o_pfxlen, $o_pfxlen_v6, $o_4, $o_6) < 0) {
+if (pfxlist_generate($o_format, $asn, $o_pfxstr, $o_pfxstr_v6, $o_pfxlen, $o_pfxlen_v6, $o_4, $o_6) < 0) {
 	printf("Error generating prefix-list, aborting.\n");
 	exit(1);
 }
