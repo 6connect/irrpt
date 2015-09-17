@@ -1,6 +1,6 @@
 <?php
 
-function pfxlist_generate($format, $asn, $pfxstr, $pfxlen, $pfxlen_v6, $o_4, $o_6)
+function pfxlist_generate($format, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6)
 {
 	global $cfg;
 
@@ -37,16 +37,16 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxlen, $pfxlen_v6, $o_4, $o_
 
 	switch ($format) {
 	    case 'cisco':
-		pfxlist_generate_cisco($pfxfile, $asn_number, $pfxstr, $pfxlen, $pfxlen_v6);
+		pfxlist_generate_cisco($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
 		break;
 	    case 'juniper':
-		pfxlist_generate_juniper($pfxfile, $asn_number, $pfxstr, $pfxlen, $pfxlen_v6);
+		pfxlist_generate_juniper($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
 		break;
 	    case 'extreme':
-		pfxlist_generate_extreme($pfxfile, $asn_number, $pfxstr, $pfxlen, $pfxlen_v6);
+		pfxlist_generate_extreme($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
 		break;
 	    case 'force10':
-		pfxlist_generate_force10($pfxfile, $asn_number, $pfxstr, $pfxlen, $pfxlen_v6);
+		pfxlist_generate_force10($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
 		break;
 	    default:
 		break;
@@ -55,12 +55,12 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxlen, $pfxlen_v6, $o_4, $o_
 	fclose($pfxfile);
 }
 
-function pfxlist_generate_juniper($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
+function pfxlist_generate_juniper($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6)
 {
 	global $cfg;
 	$v4_list = $v6_list = array();
 	$v4_policy_name = sprintf($pfxstr, $asn);
-	$v6_policy_name = sprintf($pfxstr . ":V6", $asn);
+	$v6_policy_name = sprintf($pfxstr_v6 . ":V6", $asn);
 
 	while (!feof($pfxfile)) {
 			if (!($line = rtrim(fgets($pfxfile, 64))))
@@ -110,13 +110,26 @@ function pfxlist_print_juniper($policy_name, $list) {
 
 }
 
-function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
+function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6)
 {
 	$pfxname = sprintf($pfxstr, $asn);
+	$pfxname_v6 = sprintf($pfxstr_v6, $asn);
 	global $cfg;
 
 	printf("conf t\n");
-	printf("no ip prefix-list %s\n", $pfxname);
+  if( $o_4 == 1 && $o_6 == 0 )
+  {
+    printf("no ip prefix-list %s\n", $pfxname);
+  }
+  elseif( $o_6 == 1 && $o_4 == 0 )
+  {
+    printf("no ip prefix-list %s\n", $pfxname_v6);
+  }
+  else
+  {
+    printf("no ip prefix-list %s\n", $pfxname);
+    printf("no ip prefix-list %s\n", $pfxname_v6);
+  }
 
 	while (!feof($pfxfile)) {
 		if (!($line = rtrim(fgets($pfxfile, 64))))
@@ -127,18 +140,19 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 
     if (_ip_version($line) == '4')
     {
-		printf("ip prefix-list %s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
-
-		if ($prefix[1] < $pfxlen)
-			printf(" le %s", $pfxlen);
+		  printf("ip prefix-list %s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
+  		if ($prefix[1] < $pfxlen)
+	  		printf(" le %s", $pfxlen);
     }
+
     elseif (_ip_version($line) == '6')
     {
-		printf("ipv6 prefix-list %s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
+		  printf("ipv6 prefix-list %s permit %s/%d", $pfxname_v6, $prefix[0], $prefix[1]);
 
-		if ($prefix[1] < $pfxlen_v6)
-			printf(" le %s", $pfxlen_v6);
+		  if ($prefix[1] < $pfxlen_v6)
+			  printf(" le %s", $pfxlen_v6);
     }
+
 		printf("\n");
 	}
 
@@ -148,14 +162,30 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 	return 0;
 }
 
-function pfxlist_generate_extreme($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
+function pfxlist_generate_extreme($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6)
 {
 	/* ExtremeWare can not handle : names, replace with - */
 	$pfxname = str_replace(":","-", sprintf($pfxstr, $asn));
+	$pfxname_v6 = str_replace(":","-", sprintf($pfxstr_v6, $asn));
 	global $cfg;
 
-	printf("delete access-profile %s\n", $pfxname);
-	printf("create access-profile %s type ipaddress\n", $pfxname);
+  if( $o_4 == 1 && $o_6 == 0 )
+  {
+    printf("delete access-profile %s\n", $pfxname);
+    printf("create access-profile %s type ipaddress\n", $pfxname);
+  }
+  elseif( $o_6 == 1 && $o_4 == 0 )
+  {
+    printf("delete access-profile %s\n", $pfxname_v6);
+    printf("create access-profile %s type ipaddress\n", $pfxname_v6);
+  }
+  else
+  {
+    printf("delete access-profile %s\n", $pfxname);
+    printf("create access-profile %s type ipaddress\n", $pfxname);
+    printf("delete access-profile %s\n", $pfxname_v6);
+    printf("create access-profile %s type ipaddress\n", $pfxname_v6);
+  }
 
 	$counter = 10;
 
@@ -165,10 +195,10 @@ function pfxlist_generate_extreme($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 
 		$prefix = explode("/", rtrim($line));
 
-		printf("configure access-profile %s add %d permit ipaddress %s/%d", $pfxname, $counter += 10, $prefix[0], $prefix[1]);
 
     if (_ip_version($line) == '4')
     {
+		  printf("configure access-profile %s add %d permit ipaddress %s/%d", $pfxname, $counter += 10, $prefix[0], $prefix[1]);
 		  if ($prefix[1] < $pfxlen)
       {
 			  printf("\n", $pfxlen);
@@ -180,6 +210,7 @@ function pfxlist_generate_extreme($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
     }
     elseif (_ip_version($line) == '6')
     {
+		  printf("configure access-profile %s add %d permit ipaddress %s/%d", $pfxname_v6, $counter += 10, $prefix[0], $prefix[1]);
 		  if ($prefix[1] < $pfxlen_v6)
       {
 			  printf("\n", $pfxlen_v6);
@@ -196,14 +227,31 @@ function pfxlist_generate_extreme($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 	return 0;
 }
 
-function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
+function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6)
 {
 	$pfxname = sprintf($pfxstr, $asn);
+	$pfxname_v6 = sprintf($pfxstr_v6, $asn);
 	global $cfg;
 
 	printf("conf t\n");
-	printf("no ip prefix-list %s\n", $pfxname);
-	printf("ip prefix-list %s\n", $pfxname);
+
+  if( $o_4 == 1 && $o_6 == 0 )
+  {
+    printf("no ip prefix-list %s\n", $pfxname);
+    printf("ip prefix-list %s\n", $pfxname);
+  }
+  elseif( $o_6 == 1 && $o_4 == 0 )
+  {
+    printf("no ip prefix-list %s\n", $pfxname_v6);
+    printf("ip prefix-list %s\n", $pfxname_v6);
+  }
+  else
+  {
+    printf("no ip prefix-list %s\n", $pfxname);
+    printf("ip prefix-list %s\n", $pfxname);
+    printf("no ip prefix-list %s\n", $pfxname_v6);
+    printf("ip prefix-list %s\n", $pfxname_v6);
+  }
 
 	while (!feof($pfxfile)) {
 		if (!($line = rtrim(fgets($pfxfile, 64))))
@@ -211,16 +259,15 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxlen, $pfxlen_v6)
 
 		$prefix = explode("/", rtrim($line));
 
-	        printf("%s permit %s/%d", $pfxname, $prefix[0],
-			$prefix[1]);
-
     if (_ip_version($line) == '4')
     {
+	    printf("%s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
 		  if ($prefix[1] < $pfxlen)
 			  printf(" le %s", $pfxlen);
     }
     elseif (_ip_version($line) == '6')
     {
+	    printf("%s permit %s/%d", $pfxname_v6, $prefix[0], $prefix[1]);
 		  if ($prefix[1] < $pfxlen_v6)
 			  printf(" le %s", $pfxlen_v6);
     }
