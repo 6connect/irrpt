@@ -282,7 +282,7 @@ class IRRQuery {
 
     /* Prepend 'AS' to set if not provided */
 
-    if (preg_match("/^AS./", $origin) == 0) 
+    if (preg_match("/^AS./i", $origin) == 0) 
     {
       $origin = 'AS'.$origin;
     }
@@ -318,7 +318,7 @@ class IRRQuery {
 
     /* Prepend 'AS' to set if not provided */
 
-    if (preg_match("/^AS./", $origin) == 0) 
+    if (preg_match("/^AS./i", $origin) == 0) 
     {
       $origin = 'AS'.$origin;
     }
@@ -363,7 +363,7 @@ class IRRQuery {
     /* XXX - This should be caching results, maybe? */
 
     /* Prepend 'AS' to set if not provided */
-    if (preg_match("/^AS./", $set) == 0) 
+    if (preg_match("/^AS./i", $set) == 0) 
     {
       $set = 'AS'.$set;
     }
@@ -422,7 +422,7 @@ class IRRQuery {
     $routes = array();
 
     /* Prepend 'AS' to set if not provided */
-    if (preg_match("/^AS./", $set) == 0) 
+    if (preg_match("/^AS./i", $set) == 0) 
     {
       $set = 'AS'.$set;
     }

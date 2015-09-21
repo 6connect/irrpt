@@ -7,9 +7,6 @@ function update_file_permissions($file, $permission) {
 
 	// if the file uid is the same as effective uid, update file permissions 
 	//else throw a warning
-echo "eid: $e_id\n";
-echo "oid: $o_id\n";
-
 	if($e_id == $o_id) {
 		chmod($file, $permission);
 	}
