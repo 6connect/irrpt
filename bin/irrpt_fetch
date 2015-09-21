@@ -98,21 +98,23 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
 
 	/* Write the routes we've just looked up into a file */
 	status(STATUS_NOTICE, "Writing routes to local database.");
-  if (($output4 = fopen($routefile4, "w")) == FALSE) 
-  {
-    status(STATUS_WARNING, "Can not open IRRDB output file for {$asString}, skipping this record.");
-    continue;
-  }
-  for($i = 0; $i < sizeof($routes4); $i++)
-  {
- 	  fwrite($output4, sprintf("%s\n", $routes4[$i]));
-  }
-  fclose($output4);
-  update_file_permissions($routefile4, $cfg['cfgfiles']['umask']);
+
+	if (($output4 = fopen($routefile4, "w")) == FALSE) 
+	{
+		status(STATUS_WARNING, "Can not open IRRDB output file for {$asString}, skipping this record.");
+	}
+
+	for($i = 0; $i < sizeof($routes4); $i++)
+	{
+		fwrite($output4, sprintf("%s\n", $routes4[$i]));
+	}
+
+	fclose($output4);
+	update_file_permissions($routefile4, $cfg['cfgfiles']['umask']);
 
 	/* Aggregate the route file */
 	status(STATUS_NOTICE, "Aggregating v4 routes.");
-  $aggregated_routes4 = aggregate_routes($routefile4);
+	$aggregated_routes4 = aggregate_routes($routefile4);
 
   /* print result to a file */
   if (($afile4 = fopen($aggfile4, "w")) == FALSE)
