@@ -57,20 +57,20 @@ function update_email($file, $email, $asString, $object, $rev, $type)
 	$headers .= "Date: " . date("r") . "\n";
 
 	if ($rev['old'] != "0.00") {
-	        $content .= "Changes for {$asString} (object {$object}) ({$type}):\n\n";
-	        $content .= $cvs->get_diff($file, $rev);
-        	$content .= "\n\n";
+		$content .= "Changes for {$asString} (object {$object}) ({$type}):\n\n";
+		$content .= $cvs->get_diff($file, $rev);
 		$subject = $cfg['update']['subject'] . "{$asString} ({$type} Changes)";
-	} else
+	} else {
 		$subject = $cfg['update']['subject'] . "{$asString} ({$type} Initial Import)";
+	}
 
-        $content .= "Complete list for {$asString} (object {$object}) ({$type}):\n";
-        $content .= $cvs->get_complete($file);
+	$content .= "Complete list for {$asString} (object {$object}) ({$type}):\n";
+	$content .= $cvs->get_complete($file);
 
 
 	if (!($email == "-" || $email == "none" || !isset($email))) {
 		status(STATUS_INFO, "   - Sending update notification to {$email}");
-	        mail($email, $subject, $content, $headers);
+		mail($email, $subject, $content, $headers);
 	}
 
         if (isset($cfg['update']['localcopy']))
