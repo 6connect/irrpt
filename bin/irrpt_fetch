@@ -394,7 +394,7 @@ if (isset($_SERVER['argv'][$offset+0]))
     $count++;
     process_as($asString, $count, $asString, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
   }
-  elseif ( (int)$_SERVER['argv'][$offset+0] > 0 && (int) $_SERVER['argv'][$offset+0] <= 4294967295) {
+  elseif ( is_numeric($_SERVER['argv'][$offset+0]) && (int)$_SERVER['argv'][$offset+0] > 0 && (int)$_SERVER['argv'][$offset+0] <= 4294967295) {
   	$asString = "AS" . $_SERVER['argv'][$offset+0];
     $count++;
     process_as($asString, $count, $asString, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
