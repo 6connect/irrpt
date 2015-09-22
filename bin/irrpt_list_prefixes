@@ -142,7 +142,7 @@ if (!$o_aggregate) {
 
   /* print result */
   $count = count($aggregated_routes);
-  for ($i = 1; $i < $count; $i++)
+  for ($i = 0; $i < $count; $i++)
   {
     print "$aggregated_routes[$i]";
   }
