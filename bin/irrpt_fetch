@@ -103,12 +103,13 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
 	{
 		status(STATUS_WARNING, "Can not open IRRDB output file for {$asString}, skipping this record.");
 	}
-
-	for($i = 0; $i < sizeof($routes4); $i++)
-	{
-		fwrite($output4, sprintf("%s\n", $routes4[$i]));
-	}
-
+  if (is_array($routes4))
+  {
+	  for($i = 0; $i < sizeof($routes4); $i++)
+	  {
+		  fwrite($output4, sprintf("%s\n", $routes4[$i]));
+	  }
+  }
 	fclose($output4);
 	update_file_permissions($routefile4, $cfg['cfgfiles']['umask']);
 
@@ -122,10 +123,12 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
     status(STATUS_WARNING, "Can not open agg route file, skipping this record.");
     continue;
   }
-
-  for ($i = 0; $i < sizeof($aggregated_routes4); $i++)
+  if (is_array($aggregated_routes4))
   {
-    fwrite($afile4, "$aggregated_routes4[$i]");
+    for ($i = 0; $i < sizeof($aggregated_routes4); $i++)
+    {
+      fwrite($afile4, "$aggregated_routes4[$i]");
+    }
   }
   fclose($afile4);
   update_file_permissions($aggfile4, $cfg['cfgfiles']['umask']);
@@ -155,12 +158,15 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
 	status(STATUS_NOTICE, "Writing routes to local database.");
   if (($output6 = fopen($routefile6, "w")) == FALSE) 
   {
-		status(STATUS_ERROR, "Can not open IRRDB output file for {$asString}, skipping this record.");
+		status(STATUS_WARNING, "Can not open IRRDB output file for {$asString}, skipping this record.");
   	continue;
   }
-  for($i = 0; $i < sizeof($routes6); $i++)
+  if (is_array($routes6))
   {
-		fwrite($output6, sprintf("%s\n", $routes6[$i]));
+    for($i = 0; $i < sizeof($routes6); $i++)
+    {
+		  fwrite($output6, sprintf("%s\n", $routes6[$i]));
+    }
   }
 	fclose($output6);
   update_file_permissions($routefile6, $cfg['cfgfiles']['umask']);
@@ -172,12 +178,15 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
   /* print result to a file */
   if (($afile6 = fopen($aggfile6, "w")) == FALSE)
   {
-    status(STATUS_ERROR, "Can not open agg route file, aborting.");
+    status(STATUS_WARNING, "Can not open agg route file, skipping this record.");
     continue;
   }
-  for ($i = 0; $i < sizeof($aggregated_routes6); $i++)
+  if (is_array($aggregated_routes6))
   {
-    fwrite($afile6, "$aggregated_routes6[$i]");
+    for ($i = 0; $i < sizeof($aggregated_routes6); $i++)
+    {
+      fwrite($afile6, "$aggregated_routes6[$i]");
+    }
   }
   fclose($afile6);
   update_file_permissions($aggfile6, $cfg['cfgfiles']['umask']);
@@ -249,7 +258,7 @@ function process_as($asString, $count, $object, $irr, $email, $o_quiet, $o_4, $o
 	status(STATUS_NOTICE, "Writing ASN list to local database.");
 	if (($output = fopen($asnfile, "w")) == FALSE) 
   {
-		status(STATUS_ERROR, "Can not open ASN list output file for {$asString}, skipping this record.");
+		status(STATUS_WARNING, "Can not open ASN list output file for {$asString}, skipping this record.");
 		continue;
 	}
 	for($i = 0; $i < sizeof($asnlist); $i++)
@@ -394,7 +403,7 @@ if (isset($_SERVER['argv'][$offset+0]))
     $count++;
     process_as($asString, $count, $asString, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
   }
-  elseif ( (int)$_SERVER['argv'][$offset+0] > 0 && (int) $_SERVER['argv'][$offset+0] <= 4294967295) {
+  elseif ( is_numeric($_SERVER['argv'][$offset+0]) && (int)$_SERVER['argv'][$offset+0] > 0 && (int)$_SERVER['argv'][$offset+0] <= 4294967295) {
   	$asString = "AS" . $_SERVER['argv'][$offset+0];
     $count++;
     process_as($asString, $count, $asString, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);

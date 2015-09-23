@@ -12,8 +12,8 @@ function aggregate_routes($routefile)
   status(STATUS_NOTICE, "Aggregating routes - sorting...");
   if (($addresses = file($routefile)) == FALSE)
   {
-    status(STATUS_ERROR, "Unable to open route file config file, aborting.");
-    exit(-1);
+    status(STATUS_WARNING, "Unable to open route file config file or file empty, skipping.");
+    return FALSE;
   }
 
   for ($i = 0; $i < count($addresses); $i++)
@@ -166,7 +166,17 @@ function aggregate_routes($routefile)
     }
     $addresses = array_values($addresses);
   }
- 
+
+  for ($i = 0; $i < count($addresses); $i++)
+  {  
+    if (_ip_version($addresses[$i]) == '6')
+    {
+      /* compress v6 notation */
+      $exploded = explode("/", $addresses[$i]);
+      $addresses[$i] = _v6_compress($exploded[0]) . "/" . $exploded[1];
+    }
+  }
+
   return $addresses; 
 }
 

@@ -21,7 +21,7 @@ function explorer($object, $depth, $o_4, $o_6)
 
   // if this is an AS number, not an object
   // see if it holds any 4/6 prefixes 
-  if (preg_match("/AS\d./", $object))
+  if (preg_match("/AS\d./", $object) && $depth > 0)
   {
 
     // the v4 switch is enabled, only pring ASes in the set with registered v4 prefixes 
@@ -29,9 +29,9 @@ function explorer($object, $depth, $o_4, $o_6)
     {
       $resolve_v4_result = resolve_v4($irr, $object);
       list($routes4, $asnlist4) = $resolve_v4_result;
-      if (sizeof($routes4) > 0 )
+      if (sizeof($routes4) > 1 )
       {
-	      printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
+	      printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
       }
     }
 
@@ -40,15 +40,16 @@ function explorer($object, $depth, $o_4, $o_6)
     {
       $resolve_v6_result = resolve_v6($irr, $object);
       list($routes6, $asnlist6) = $resolve_v6_result;
-      if (sizeof($routes6) > 0 )
+      if (sizeof($routes6) > 1 )
       {
-	      printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
+	      printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
       }
     }
 
     // if no switch is enabled, print the entire set 
+    // unless it's the initial set, or we would print it double 
     else {
-	    printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
+	      printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
     }
   }
 
@@ -72,7 +73,6 @@ function explorer($object, $depth, $o_4, $o_6)
 		} else
 			printf(" (dup)\n");
 	} else {
-		printf("\n");
 		return TRUE;
 	}
 

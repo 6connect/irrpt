@@ -28,11 +28,18 @@ function _ip_version($txt)
   return strpos($txt, ":") === false ? 4 : 6;
 }
 
-/* expand v6 notation with all it's zeros */
+/* expand v6 notation with all its zeros */
 function _v6_expand($ip) 
 {
     $hex = unpack("H*hex", inet_pton($ip));         
     $ip = substr(preg_replace("/([A-f0-9]{4})/", "$1:", $hex['hex']), 0, -1);
+    return $ip;
+}
+
+/* compress v6 notation and all its zeros */
+function _v6_compress($ip) 
+{
+    $ip = inet_ntop(inet_pton($ip));
     return $ip;
 }
 
