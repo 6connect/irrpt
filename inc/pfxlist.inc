@@ -68,7 +68,7 @@ function pfxlist_generate_juniper($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 
 		if (_ip_version($line) == '4')
 		{
-			  $formatted_line = sprintf("                route-filter %s upto /%d;\n", $line, $pfxlen);
+			$formatted_line = sprintf("                route-filter %s upto /%d;\n", $line, $pfxlen);
 			$v4_list[] = $formatted_line;
 		}
 		elseif (_ip_version($line) == '6')
@@ -235,44 +235,37 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 
 	printf("conf t\n");
 
-  if( $o_4 == 1 && $o_6 == 0 )
-  {
-    printf("no ip prefix-list %s\n", $pfxname);
-    printf("ip prefix-list %s\n", $pfxname);
-  }
-  elseif( $o_6 == 1 && $o_4 == 0 )
-  {
-    printf("no ip prefix-list %s\n", $pfxname_v6);
-    printf("ip prefix-list %s\n", $pfxname_v6);
-  }
-  else
-  {
-    printf("no ip prefix-list %s\n", $pfxname);
-    printf("ip prefix-list %s\n", $pfxname);
-    printf("no ip prefix-list %s\n", $pfxname_v6);
-    printf("ip prefix-list %s\n", $pfxname_v6);
-  }
-
-	while (!feof($pfxfile)) {
-		if (!($line = rtrim(fgets($pfxfile, 64))))
-			continue;
+    while (!feof($pfxfile)) {
+        if (!($line = rtrim(fgets($pfxfile, 64))))
+            continue;
 
 		$prefix = explode("/", rtrim($line));
 
-    if (_ip_version($line) == '4')
-    {
-	    printf("%s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
-		  if ($prefix[1] < $pfxlen)
-			  printf(" le %s", $pfxlen);
-    }
-    elseif (_ip_version($line) == '6')
-    {
-	    printf("%s permit %s/%d", $pfxname_v6, $prefix[0], $prefix[1]);
-		  if ($prefix[1] < $pfxlen_v6)
-			  printf(" le %s", $pfxlen_v6);
-    }
-	  printf("\n");
-	}
+		if (_ip_version($line) == '4')
+		{
+			$formatted_line = sprintf("%s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
+			if ($prefix[1] < $pfxlen)
+				$formatted_line .= sprintf(" le %s", $pfxlen);
+
+			$v4_list[] = $formatted_line;
+		}
+		elseif (_ip_version($line) == '6')
+		{
+			$formatted_line = sprintf("%s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
+			if ($prefix[1] < $pfxlen)
+				$formatted_line .= sprintf(" le %s", $pfxlen);
+
+			$v6_list[] = $formatted_line;
+		}
+		else
+		{
+		  status(STATUS_ERROR, "Prefix not recognized: {$line}");
+		  return FALSE;
+		}
+	} //end while
+
+    pfxlist_print_force10($pfxname, $v4_list);
+    pfxlist_print_force10($pfxname_v6, $v6_list);
 
 	printf("end\n");
 	printf("write mem\n");
@@ -280,5 +273,18 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 	return 0;
 }
 
+function pfxlist_print_force10($policy_name, $list) {
+
+    if(count($list > 0)) {
+		printf("no ip prefix-list %s\n", $policy_name);
+		printf("ip prefix-list %s\n", $policy_name);
+
+        foreach($list as $line) {
+            print $line;
+			printf("}\n");
+        }
+    }
+
+}
 
 ?>
