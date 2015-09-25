@@ -121,7 +121,6 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
   if (($afile4 = fopen($aggfile4, "w")) == FALSE)
   {
     status(STATUS_WARNING, "Can not open agg route file, skipping this record.");
-    continue;
   }
   if (is_array($aggregated_routes4))
   {
@@ -159,7 +158,6 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
   if (($output6 = fopen($routefile6, "w")) == FALSE) 
   {
 		status(STATUS_WARNING, "Can not open IRRDB output file for {$asString}, skipping this record.");
-  	continue;
   }
   if (is_array($routes6))
   {
@@ -179,7 +177,6 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
   if (($afile6 = fopen($aggfile6, "w")) == FALSE)
   {
     status(STATUS_WARNING, "Can not open agg route file, skipping this record.");
-    continue;
   }
   if (is_array($aggregated_routes6))
   {
@@ -259,7 +256,6 @@ function process_as($asString, $count, $object, $irr, $email, $o_quiet, $o_4, $o
 	if (($output = fopen($asnfile, "w")) == FALSE) 
   {
 		status(STATUS_WARNING, "Can not open ASN list output file for {$asString}, skipping this record.");
-		continue;
 	}
 	for($i = 0; $i < sizeof($asnlist); $i++)
   {
