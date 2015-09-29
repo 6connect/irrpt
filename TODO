@@ -1,6 +1,8 @@
 Project Goals: IRR PowerTools 2.0
 ---------------------------------
 
+* Add support for restoration of non-default CVS paths.
+
 * Develop a web-based frontend for IRRPT user operation. Features include 
   configuration management, a work queue for changes which need to be 
   processed, an integrated route history viewer, and integrated AS-SET 
