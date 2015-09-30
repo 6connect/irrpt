@@ -394,7 +394,11 @@ if (isset($_SERVER['argv'][$offset+0]))
 {
   if (preg_match("/^AS./i", $_SERVER['argv'][$offset+0])) {
   	$asString = strtoupper($_SERVER['argv'][$offset+0]);
-    $asNumber = $asString;
+
+    $asNumber = preg_replace("/[aA][sS]/", "", $asString);
+    if ( !is_numeric($asNumber) ) {
+      $asNumber = $asString;
+    }
     $count++;
     process_as($asString, $asNumber, $count, $asString, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
   }
