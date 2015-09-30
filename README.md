@@ -1,8 +1,7 @@
 IRRPT
 ======
-Sponsored by TorIX - The Toronto Internet Exchange
-======
 
+### Sponsored by TorIX - The Toronto Internet Exchange
 * Originally written by Richard A Steenbergen <ras@e-gerbil.net>
 * Older versions can be found on sourceforge at [http://sourceforge.net/projects/irrpt/](http://sourceforge.net/projects/irrpt/)
 
