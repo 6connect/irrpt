@@ -1,4 +1,6 @@
-IRRPT - Sponsored by TorIX - The Toronto Internet Exchange
+IRRPT
+======
+Sponsored by TorIX - The Toronto Internet Exchange
 ======
 
 * Originally written by Richard A Steenbergen <ras@e-gerbil.net>
