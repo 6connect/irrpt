@@ -3,8 +3,6 @@ IRRPT - Sponsored by TorIX - The Toronto Internet Exchange
 
 * Originally written by Richard A Steenbergen <ras@e-gerbil.net>
 * Older versions can be found on sourceforge at [http://sourceforge.net/projects/irrpt/](http://sourceforge.net/projects/irrpt/)
-* IPv6 support added by Elisa Jasinska <elisa@bigwaveit.org> for version 1.29 
-* Bug Fixes and enhancements provided by Anna Claiborne <domino@theshell.org> 
 
 Summary
 -------
@@ -373,22 +371,26 @@ Change Log
 
 1.29 - August 30 2015
 
+Changes for version 1.29 by Anna Claiborne <domino@theshell.org>:
+
  * Removed calls to system to concatenate v4/v6 route files.  Now performed by php function in utils.inc.
  * Provided support to leave email in irrdb.conf blank if the user wishes no email updates for a particular as/object.
  * Fixed support for separate (correct) v4 and v6 prefix list for Juniper config.
  * Added AS validation/checking for pfxgen.
+
+Changes for version 1.29 by Elisa Jasinska <elisa@bigwaveit.org>:
+
  * Implemented aggregate functionality and removed dependency on the
-   external agregate tool - Elisa Jasinska <elisa@bigwaveit.org>.
+   external agregate tool
  * Added v6 support to IRR query, to prefix exclusion via
-   exclusions.conf, to aggregation and to the prefix generator - 
-   Elisa Jasinska <elisa@bigwaveit.org>.
- * -4 and -6 switches for all command line tools - Elisa Jasinska <elisa@bigwaveit.org>.
+   exclusions.conf, to aggregation and to the prefix generator
+ * -4 and -6 switches for all command line tools
  * Renamed irrpt_eval and irrpt_explorer into irrpt_list_ases
-   and irrpt_list_prefixes - Elisa Jasinska <elisa@bigwaveit.org>.
+   and irrpt_list_prefixes
  * Better input validation for AS numbers and AS Sets as well as case sensitivity issues 
-   resolved - Elisa Jasinska <elisa@bigwaveit.org>.
- * Added -f option to provide location to irrdb.conf file - Elisa Jasinska <elisa@bigwaveit.org>.
- * Added --nocvs option to omit cvs tracking - Elisa Jasinska <elisa@bigwaveit.org>.
+   resolved
+ * Added -f option to provide location to irrdb.conf file
+ * Added --nocvs option to omit cvs tracking
 
 1.28 - June 8 2015
 
