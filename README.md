@@ -1,11 +1,9 @@
-/***********************************************************************/
-/* IRRPT - Sponsored by TorIX - The Toronto Internet Exchange          */
-/***********************************************************************/
+IRRPT
+======
 
+### Sponsored by TorIX - The Toronto Internet Exchange
 * Originally written by Richard A Steenbergen <ras@e-gerbil.net>
 * Older versions can be found on sourceforge at [http://sourceforge.net/projects/irrpt/](http://sourceforge.net/projects/irrpt/)
-* IPv6 support added by Elisa Jasinska <elisa@bigwaveit.org> for version 1.29 
-* Bug Fixes and enhancements provided by Anna Claiborne <domino@theshell.org> 
 
 Summary
 -------
@@ -69,9 +67,10 @@ will hopefully lead to more accurate data and a more effective system.
 Requirements
 ------------
 
-* CVS                     (http://www.gnu.org/software/cvs/)
 * PHP          >= 5.6     (http://www.php.net/downloads.php)
+* CVS                     (http://www.gnu.org/software/cvs/)
 * CVSweb       Optional   (http://people.freebsd.org/~scop/cvsweb/)
+
 
 Installation
 -------------
@@ -82,16 +81,64 @@ https://github.com/6connect/irrpt.git
 Or, download the zip file and extract.
 Run 'php configure.php' in the base installation directory.
 
+To get started, you probably want to take a look at every file in 
+the /conf directory. The most important information to change will be 
+paths and company-specific information such as the name, ASN, and 
+e-mail addresses.
+
+    irrpt.conf      - This is the master config file which contains global 
+                      configuration information, the paths to our internal 
+                      locations and external tools, and internal parameters.
+
+    irrdb.conf      - This is the second most important config file, 
+                      containing a list of the ASNs and IRR Objects you wish
+                      to track.
+
+    nag.conf        - This file contains the settings for the nag process.
+
+    nag.msg         - This file contains the message that will be sent 
+                      during the nag process.
+
+    exclusions.conf - This file lists routes which can not be registered. A 
+                      good example for this file would be known bogon routes,
+                      or routes in known unallocated space.
+
+The irrdb.conf file should certain a unique ASN, the IRR object (an 
+AS-SET or AUT-NUM record) that you are interested in tracking, and a 
+contact e-mail for change notification. You probably want to track your 
+own ASN and AS-SET record here as well.
+
+A reasonable deployment would be to crontab the fetch process once or 
+better yet twice a day. If you need to add a new customer outside of 
+the normal fetch schedule, or if a customer needs an emergency 
+prefix-list update, you can add the ASN/IRR Object to irrdb.conf and 
+run a manual pull of just that ASN, with "./fetch ASN".
+
+After the updates are processed, you should receive a local copy of the 
+e-mail. It is probably reasonable to keep a human being in the loop 
+between prefix fetching and prefix deployment, to make certain that 
+nothing "bad" or unintended is happening. After you are reasonably 
+certain that the changes are ready for deployment, you can generate 
+the router configs use the "pfxgen" tool. Optionally, you can nag 
+any of your transit providers who still require e-mail updates using 
+the nag process.
+
+If there is anything else that you can't figure out, it is probably 
+either a bug or an oversight in the documentation. Send e-mail about 
+either one, and I'll make certain it gets addressed in a future 
+release.
+
+
 Documentation
 -------------
 
 The operation of IRR PowerTools is broken down into the following distinct 
 operations:
 
-################ irrpt_fetch ###################
+### irrpt_fetch
 
     $ bin/irrpt_fetch -h
-    Usage: bin/irrpt_fetch [-hqv] [asn]
+    Usage: bin/irrpt_fetch [-h46qv] [-f file] [--nocvs] [object]
 
 Quiet mode:
 
@@ -123,10 +170,14 @@ process, the following steps are performed:
    alerting everyone that the routing change has been successfully 
    processed.
 
-################ irrpt_nag ###################
+### irrpt_nag
 
     $ bin/irrpt_nag -h
     Usage: bin/irrpt_nag [-hp] [-c config] [-m message] <previous rev> <current rev>
+
+    Options:
+       -p    Preview mode (for diagnostic use). Print results to screen instead of
+             e-mail.
 
 In this stage, any transit providers (or other interested parties) 
 who still track prefix-list updates via e-mail rather than via IRR 
@@ -138,11 +189,12 @@ Unfortunately many of the largest ISPs still use human processing of
 prefix lists, so for the immediate future you will probably still be 
 getting a lot of use out of this tool.
 
-################ irrpt_pfxgen ###################
+### irrpt_pfxgen
 
     $ bin/irrpt_pfxgen -h
-    Usage: bin/irrpt_pfxgen [-h] [-p pfxstr] [-l pfxlength] [-l pfxlength_v6] [-f format] <asn>
-      pfxstr       - The prefix-list name format string (default: PEER:%d)
+    Usage: bin/irrpt_pfxgen [-h46] [-p pfxstr] [-p6 pfxstr_v6] [-l pfxlength] [-l6 pfxlength_v6] [-f format] <asn>
+      pfxstr       - The prefix-list name format string (default: CUSTOMER:%d)
+      pfxstr_v6    - The prefix-list name format string (default: CUSTOMERv6:%d)
       pfxlength    - The max length more-specific that will be allowed (default: 24)
       pfxlength_v6 - The max length more-specific that will be allowed for v6 (default: 48)
       format       - The output format for a specific router type (default: cisco)
@@ -205,12 +257,12 @@ status data, not deploying configurations.
 
 Many other systems exist as well.
 
-################ irrpt_list_prefixes ###################
+### irrpt_list_prefixes
 
-Show prefixes for a given AS-SET, in unaggregated or aggregated form.
+Show prefixes for a given AS or AS-SET, in unaggregated or aggregated form.
 
     $ bin/irrpt_list_prefixes -h
-    Usage: bin/irrpt_list_prefixes [-hva] <object>
+    Usage: bin/irrpt_list_prefixes [-h46va] <object>
 
 Pull unaggregated prefixes:
 
@@ -234,12 +286,12 @@ Verbose mode:
     ...
 
 
-################ irrpt_list_ases ###################
+### irrpt_list_ases
 
 Show AS numbers for a given AS-SET.
 
     $ bin/irrpt_list_ases -h
-    Usage: bin/irrpt_list_ases [-h] <object>
+    Usage: bin/irrpt_list_ases [-h46] <object>
 
 Example:
 
@@ -256,59 +308,9 @@ Example:
     ...
 
 
-Instructions
-------------
-
-To get started, you probably want to take a look at every file in 
-the /conf directory. The most important information to change will be 
-paths and company-specific information such as the name, ASN, and 
-e-mail addresses.
-
-    irrpt.conf      - This is the master config file which contains global 
-                      configuration information, the paths to our internal 
-                      locations and external tools, and internal parameters.
-
-    irrdb.conf      - This is the second most important config file, 
-                      containing a list of the ASNs and IRR Objects you wish
-                      to track.
-
-    nag.conf        - This file contains the settings for the nag process.
-
-    nag.msg         - This file contains the message that will be sent 
-                      during the nag process.
-
-    exclusions.conf - This file lists routes which can not be registered. A 
-                      good example for this file would be known bogon routes,
-                      or routes in known unallocated space.
-
-The irrdb.conf file should certain a unique ASN, the IRR object (an 
-AS-SET or AUT-NUM record) that you are interested in tracking, and a 
-contact e-mail for change notification. You probably want to track your 
-own ASN and AS-SET record here as well.
-
-A reasonable deployment would be to crontab the fetch process once or 
-better yet twice a day. If you need to add a new customer outside of 
-the normal fetch schedule, or if a customer needs an emergency 
-prefix-list update, you can add the ASN/IRR Object to irrdb.conf and 
-run a manual pull of just that ASN, with "./fetch ASN".
-
-After the updates are processed, you should receive a local copy of the 
-e-mail. It is probably reasonable to keep a human being in the loop 
-between prefix fetching and prefix deployment, to make certain that 
-nothing "bad" or unintended is happening. After you are reasonably 
-certain that the changes are ready for deployment, you can generate 
-the router configs use the "pfxgen" tool. Optionally, you can nag 
-any of your transit providers who still require e-mail updates using 
-the nag process.
-
-If there is anything else that you can't figure out, it is probably 
-either a bug or an oversight in the documentation. Send e-mail about 
-either one, and I'll make certain it gets addressed in a future 
-release.
-
-
 FAQ
 ---
+
 Q) Wouldn't this be more scalable if we stored our config and data in SQL? 
 
 A) Maybe it would. However, the purpose of this project is to open up the
@@ -367,25 +369,35 @@ the folks in the ChangeLog who helped pick out the bugs.
 
 Change Log
 -------
+
 1.29 - August 30 2015
+
+Changes for version 1.29 by Anna Claiborne <domino@theshell.org>:
+
  * Removed calls to system to concatenate v4/v6 route files.  Now performed by php function in utils.inc.
  * Provided support to leave email in irrdb.conf blank if the user wishes no email updates for a particular as/object.
  * Fixed support for separate (correct) v4 and v6 prefix list for Juniper config.
  * Added AS validation/checking for pfxgen.
 
-1.29 -  June 30 2015
+Changes for version 1.29 by Elisa Jasinska <elisa@bigwaveit.org>:
 
- * Implemented aggregate fntionality and removed dependency on the
-   external agregate tool.
+ * Implemented aggregate functionality and removed dependency on the
+   external agregate tool
  * Added v6 support to IRR query, to prefix exclusion via
-   exclusions.conf, to aggregation and to the prefix generator.
+   exclusions.conf, to aggregation and to the prefix generator
+ * -4 and -6 switches for all command line tools
  * Renamed irrpt_eval and irrpt_explorer into irrpt_list_ases
-   and irrpt_list_prefixes.
+   and irrpt_list_prefixes
+ * Better input validation for AS numbers and AS Sets as well as case sensitivity issues 
+   resolved
+ * Added -f option to provide location to irrdb.conf file
+ * Added --nocvs option to omit cvs tracking
 
 1.28 - June 8 2015
 
- * Making this version compatible with TORIX changes, such as: -q quiet
-   mode, timezone support and memory limit support
+ * Making the latest version compatible with TORIX changes, such as: -q quiet
+   mode, timezone support and memory limit support by Elisa Jasinska 
+   <elisa@bigwaveit.org>.
 
 1.27 - Feb 8 2008
 

@@ -331,7 +331,7 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++)
 	switch($_SERVER['argv'][$offset]) {
 	    case "-h":
 	    case "--help":
-		printf("Usage: %s [-h46qv] [-f file] [--nocvs] [asn]\n", $_SERVER['argv'][0]);
+		printf("Usage: %s [-h46qv] [-f file] [--nocvs] [object]\n", $_SERVER['argv'][0]);
 		exit(1);
 	    case "-q":
 	    case "--quiet":
