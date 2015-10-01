@@ -60,7 +60,7 @@ function pfxlist_generate_juniper($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 	global $cfg;
 	$v4_list = $v6_list = array();
 	$v4_policy_name = sprintf($pfxstr, $asn);
-	$v6_policy_name = sprintf($pfxstr_v6 . ":V6", $asn);
+	$v6_policy_name = sprintf($pfxstr_v6, $asn);
 
 	while (!feof($pfxfile)) {
 			if (!($line = rtrim(fgets($pfxfile, 64))))
