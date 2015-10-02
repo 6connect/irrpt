@@ -57,7 +57,7 @@ if($fh) {
 		}
 		if(preg_match('/^\$cfg\[\'tools\'\]\[\'cvs\'\]/', $line)) {
 			printf("Updating cvs path in irrpt.conf...\n");
-			$line = '$cfg[\'tools\'][\'cvs\']           ' . "= \"$cvs_path/\";\n"; 
+			$line = '$cfg[\'tools\'][\'cvs\']           ' . "= \"$cvs_path\";\n"; 
 		}
 		$newContent .= $line;
 	}
