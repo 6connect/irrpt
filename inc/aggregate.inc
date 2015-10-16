@@ -12,7 +12,7 @@ function aggregate_routes($routefile)
   status(STATUS_NOTICE, "Aggregating routes - sorting...");
   if (($addresses = file($routefile)) == FALSE)
   {
-    status(STATUS_WARNING, "Unable to open route file config file or file empty, skipping.");
+    status(STATUS_WARNING, "Unable to open route file (might be empty), skipping.");
     return FALSE;
   }
 

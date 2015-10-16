@@ -87,10 +87,6 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
 
   $resolve_v4_result = resolve_v4($irr, $object);
   list($routes4, $asnlist4) = $resolve_v4_result;
-  if (sizeof($routes4) <= 0 )
-  {
-    status(STATUS_WARNING, "No registered v4 routes found.");
-  }
 
 	/* Strip out excluded routes that can not be registered */
 	status(STATUS_NOTICE, "Filtering against excluded routes.");
@@ -144,10 +140,6 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
 
   $resolve_v6_result = resolve_v6($irr, $object);
   list($routes6, $asnlist6) = $resolve_v6_result;
-  if (sizeof($routes6) <= 0 )
-  {
-    status(STATUS_WARNING, "No registered v6 routes found.");
-  }
 
 	/* Strip out excluded routes that can not be registered */
 	status(STATUS_NOTICE, "Filtering against excluded routes.");
@@ -239,7 +231,9 @@ function process_as($asString, $asNumber, $count, $object, $irr, $email, $o_quie
 
   /* merge files into common v4 & v6 file */
 	$routefile = $cfg['paths']['db'] . $asNumber;
+	check_file_perms($routefile);
 	$aggfile = $routefile . $cfg['aggregate']['suffix'];
+	check_file_perms($aggfile);
 
     concat_files($routefile4, $routefile6, $routefile);
     concat_files($aggfile4, $aggfile6, $aggfile);

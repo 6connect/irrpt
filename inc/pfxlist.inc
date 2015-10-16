@@ -275,13 +275,13 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 
 function pfxlist_print_force10($policy_name, $list) {
 
-    if(count($list > 0)) {
+    if(count($list) > 0) {
 		printf("no ip prefix-list %s\n", $policy_name);
 		printf("ip prefix-list %s\n", $policy_name);
 
         foreach($list as $line) {
             print $line;
-			printf("}\n");
+			      printf("\n");
         }
     }
 
