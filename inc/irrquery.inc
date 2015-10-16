@@ -39,7 +39,7 @@ function resolve_v4($irr, $object)
   }
 
   if ($routes4 == FALSE) {
-    status(STATUS_NOTICE, "No registered v4 routes found for this AS.");
+    status(STATUS_WARNING, "No registered v4 routes found for this AS.");
   }
 
   $result = array($routes4, $asnlist);
@@ -65,7 +65,7 @@ function resolve_v6($irr, $object)
   }
 
   if($routes6 == FALSE) {
-    status(STATUS_NOTICE, "No registered v6 routes found for this AS.");
+    status(STATUS_WARNING, "No registered v6 routes found for this AS.");
   }
 
   $result = array($routes6, $asnlist);
