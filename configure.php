@@ -7,63 +7,72 @@ $php_version_req = "5.4";
 $php_cli = $output = $newContent = null;
 $found_cvs_path = FALSE;
 
+printf("IRRPT configuration script.\n");
+
 //Check that php is working via the system path...this would seem to be inferred, but you'd be surprised...
-printf("Checking PHP...\n");
+log_setup("Checking PHP ...");
 $php_cli = exec("which php");
 exec($php_cli . " -v", $v_output);
 
 if ((strpos($v_output[0], "PHP ") !== false) and (strpos($v_output[1], "Copyright ") !== false)) {
-	printf("PHP path $php_cli verified.\n");
+	printf("$php_cli verified.\n");
+} else {
+    printf("ERROR: PHP path $php_cli test failed: $v_output\n");
+    exit(1);
 }
-else {
-	printf("ERROR: PHP path $php_cli test failed: $v_output\n");
+
+// ---
+// Check that the php version is greater than or equal to minimum
+// required version
+
+log_setup("Checking PHP Version...");
+if( version_compare(phpversion(), $php_version_req, '<') )
+{
+	printf("ERROR: PHP version " . phpversion() . " does not meet minimum");
+	printf(" requirement of $php_version_req.\n\n");
+	printf("       You must upgrade PHP to run irrpt.\n");
 	exit(1);
-}
-
-//Check that the php version is greater than or equal to minimum required version
-printf("Checking PHP version...\n");
-$php_version_text = phpversion();
-$php_v = explode('.', $php_version_text);
-$php_version = $php_v[0] . "." . $php_v[1];
-
-if($php_version >= $php_version_req) {
-	printf("PHP version $php_version meets minimum requirement of $php_version_req.\n");
-
-}
+} 
 else {
-	printf("ERROR: PHP version $php_version does not meet minimum requirement of $php_version_req.\n  You must upgrade PHP to run irrpt.\n");
-	exit(1);
+	printf(phpversion() . " meets minimum requirement of $php_version_req.\n");
 }
 
-printf("Checking CVS...\n");
+log_setup("Checking CVS...");
 $cvs_path = exec("which cvs");
 
 if(preg_match('/cvs/i', $cvs_path)) {
-	printf("CVS is installed $cvs_path.\n");
+	printf($cvs_path . "\n");
 }
 else {
-	printf("ERROR: CVS is not installed.\n  You must install CVS to run irrpt.\n");
+	printf("ERROR: CVS is not installed.\n\n");
+	printf("You must install CVS to run irrpt.\n");
 	exit(1);
 }
 
-printf("Checking installed path...\n");
-$i_path = exec("pwd");
-printf("Installed path: $i_path\n");
+// ---
+// Check to ensure we have the right path information in the files
+
+log_setup("Checking installed path...");
+$i_path = __DIR__;
+printf($i_path . "\n");
+
 $fh = @fopen("$i_path/conf/irrpt.conf", "r");
 if($fh) {
-	while (($line = fgets($fh)) !== false) {
-		if(preg_match('/^\$cfg\[\'paths\'\]\[\'base\'\]/', $line)) {
-			printf("Updating installed path in irrpt.conf...\n");
-			$line = '$cfg[\'paths\'][\'base\']           ' . "= \"$i_path/\";\n"; 
-		}
-		if(preg_match('/^\$cfg\[\'tools\'\]\[\'cvs\'\]/', $line)) {
-			printf("Updating cvs path in irrpt.conf...\n");
-			$line = '$cfg[\'tools\'][\'cvs\']           ' . "= \"$cvs_path\";\n"; 
-		}
-		$newContent .= $line;
-	}
-
-	fclose($fh);
+	log_setup("Updating irrpt.conf...");
+	while( ($line = fgets($fh)) !== false ) {
+		if( preg_match('/^\$cfg\[\'paths\'\]\[\'base\'\]/', $line) ) {
+			printf("installed path changed. ");
+            $line = '$cfg[\'paths\'][\'base\']           ' . "= \"$i_path/\";\n";
+        }
+		if( preg_match('/^\$cfg\[\'tools\'\]\[\'cvs\'\]/', $line) )
+		{
+			printf("cvs path changed.");
+            $line = '$cfg[\'tools\'][\'cvs\']           ' . "= \"$cvs_path\";\n";
+        }
+        $newContent .= $line;
+    }
+	printf("\n");
+    fclose($fh);
 }
 else {
 	printf("ERROR: Unable to locate or read $i_path/conf/irrpt.conf.  Configuration aborted.\n");
@@ -78,15 +87,20 @@ if(empty($newContent)) {
 $irrpt_conf = @fopen("$i_path/conf/irrpt.conf", "w");
 if($irrpt_conf) {
 	fwrite($irrpt_conf, $newContent);
-	fclose($irrpt_conf);
 }
 else {
-	printf("ERROR: Could not write $i_path/conf/irrpt.conf.  Please ensure the file is writeable by the current user.\n");
+    fclose($irrpt_conf);
+	printf("ERROR: Could not write $i_path/conf/irrpt.conf.\n\n");
+	printf("Please ensure the file is writeable by the current user.\n");
 }
-printf("Checking cvs directory...\n");
+
+// ---
+// Check the CVS directory
+log_setup("Checking CVS directory...");
 if ( !file_exists("$i_path/db") ) {
-	//cvs -d /home/irrpt/db/CVS init
-	printf("WARNING: Path to cvs files is missing.  Would you like to restore the CVS directory to it's default location of $i_path/db?\n");
+	printf("WARNING: Path to cvs files is missing.\n");  
+	printf("Restore the CVS directory to it's default location of $i_path/db?\n");
+
 	$stdin = fopen('php://stdin', 'r');
 	$yes = $no = FALSE;
 
@@ -102,16 +116,21 @@ if ( !file_exists("$i_path/db") ) {
 		}
 	
 		if ($input == 'n') {
-			printf("CVS root will not be restored.  Run 'cvs -d /path/to/cvs init to restore manually.  CVS archiving of files may not work.\n");
+			printf("CVS root will not be restored.  Run 'cvs -d /path/to/cvs init to restore ");
+			printf("manually.  CVS archiving of files may not work.\n");
 			break;
 		}
 
 	}
 }
 else {
-	printf("CVS directory located at $i_path/db.\n");
+	printf("$i_path/db.\n");
 }
 
 printf("\nirrpt configuration verified.  Please edit ./conf/irrdb.conf to add the ASNs and objects you wish to track.\n");
+
+function log_setup($text) {
+   print sprintf("%-30s", $text);
+}
 
 ?>
