@@ -111,7 +111,11 @@ if ( !file_exists("$i_path/db") ) {
 		if ($input == 'y') {
 			printf("CVS root will be restored $i_path/db.\n");
 			$restore_res = exec("cvs -d $i_path/db/ init");
-			echo "$restore_res\n";	
+			echo (!empty($restore_res)) ? "CVS init...$restore_res" : FALSE;	
+			$a_res = exec("mkdir $i_path/db/CVS");
+			$a_res .= exec("echo 'D/CVSROOT////' > $i_path/db/CVS/Entries");
+			$a_res .= exec("echo '.' > $i_path/db/CVS/Repository");
+			echo (!empty($a_res)) ? "CVS init...$a_res" : FALSE;	
 			break;
 		}
 	
