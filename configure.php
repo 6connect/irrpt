@@ -92,6 +92,7 @@ else {
     fclose($irrpt_conf);
 	printf("ERROR: Could not write $i_path/conf/irrpt.conf.\n\n");
 	printf("Please ensure the file is writeable by the current user.\n");
+	exit(1);
 }
 
 // ---
@@ -111,11 +112,22 @@ if ( !file_exists("$i_path/db") ) {
 		if ($input == 'y') {
 			printf("CVS root will be restored $i_path/db.\n");
 			$restore_res = exec("cvs -d $i_path/db/ init");
-			echo (!empty($restore_res)) ? "CVS init...$restore_res" : FALSE;	
-			$a_res = exec("mkdir $i_path/db/CVS");
-			$a_res .= exec("echo 'D/CVSROOT////' > $i_path/db/CVS/Entries");
-			$a_res .= exec("echo '.' > $i_path/db/CVS/Repository");
-			echo (!empty($a_res)) ? "CVS init...$a_res" : FALSE;	
+			echo (!empty($restore_res)) ? "CVS init...$restore_res" : NULL;	
+
+			if(!mkdir("$i_path/db/CVS")) {
+				printf("ERROR: CVS restore aborted, could not create $i_path/db/CVS.\n\n");
+				exit(1);
+
+			}
+
+			if(file_put_contents("$i_path/db/CVS/Entries", 'D/CVSROOT////') === FALSE) {
+				printf("ERROR: CVS restore aborted, could not write $i_path/db/CVS/Entries.\n\n");
+				exit(1);
+			}
+			if(file_put_contents("$i_path/db/CVS/Repository", '.') === FALSE) {
+				printf("ERROR: CVS restore aborted, could not write $i_path/db/CVS/Repository.\n\n");
+				exit(1);
+			}
 			break;
 		}
 	
