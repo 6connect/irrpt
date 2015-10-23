@@ -374,61 +374,49 @@ A special thanks to Jon Nistor for many many rounds of QA for version 2.0.
 Change Log
 -------
 
-1.29 - October 22 2015
+2.0 - Aug / Sep / Oct 2015
 
-Changes for version 1.29 by Anna Claiborne <domino@theshell.org>:
- * Tagging new version as 2.0.
+Changes for version 2.0 by Anna Claiborne <domino@theshell.org>:
+
+ * Tagging new version as 2.0
  * Removed system calls from configure.php
- * Updated configure.php print out to be more easily parsible/readable.
+ * Updated configure.php print out to be more easily parsible/readable
  * Updated readme docs for version 2.0
-
-1.29 - September 30 2015
-
-Changes for version 1.29 by Anna Claiborne <domino@theshell.org>:
-
- * Created configure.php for initial setup and cvs directory restore.
- * Fixed Force10 prefix list syntax in pfxgen.
- * Fixed bugs found in running with PHP 7.
- * Removed extra and eroneous space from generated emails.
+ * Created configure.php for initial setup and cvs directory restore
+ * Fixed Force10 prefix list syntax in pfxgen
+ * Fixed bugs found in running with PHP 7
+ * Removed extra and eroneous space from generated emails
  * Fixed irrpt_fetch to check file ownership before attempting permission
-   changes.
-
-Changes for version 1.29 by Elisa Jasinska <elisa@bigwaveit.org>:
-
- * Bug fix for irrpt_list_ases with -6/-4 as listing.
- * Improved as number vs as string handling in irrpt_fetch.
- * Updated config for correct default cvs path.
- * Improved as/as-set input format checking.
- * Changed irrpt_list_prefixes to provide aggregated v6 routes in compressed
-   form instead of expanded.
- * Added command lines options for seperate v4 and v6 perfix list names.
- * Added warning when 0 routes found for AS.
- * Added v4/v6 command line switches to irrpt_list_ases.
-
-1.29 - August 31 2015
-
-Changes for version 1.29 by Anna Claiborne <domino@theshell.org>:
-
+   changes
  * Removed calls to system to concatenate v4/v6 route files.  Now performed by 
-   php function in utils.inc.
+   php function in utils.inc
  * Provided support to leave email in irrdb.conf blank if the user wishes no 
-   email updates for a particular as/object.
+   email updates for a particular as/object
  * Fixed support for separate (correct) v4 and v6 prefix list for Juniper config.
- * Added AS validation/checking for pfxgen.
+ * Added AS validation/checking for pfxgen
 
-Changes for version 1.29 by Elisa Jasinska <elisa@bigwaveit.org>:
+Changes for version 2.0 by Elisa Jasinska <elisa@bigwaveit.org>:
 
- * Implemented aggregate functionality and removed dependency on the
-   external agregate tool
  * Added v6 support to IRR query, to prefix exclusion via
    exclusions.conf, to aggregation and to the prefix generator
+ * Implemented aggregate functionality and removed dependency on the
+   external agregate tool
  * -4 and -6 switches for all command line tools
  * Renamed irrpt_eval and irrpt_explorer into irrpt_list_ases
    and irrpt_list_prefixes
- * Better input validation for AS numbers and AS Sets as well as case sensitivity issues 
-   resolved
  * Added -f option to provide location to irrdb.conf file
  * Added --nocvs option to omit cvs tracking
+ * Bug fix for irrpt_list_ases with -6/-4
+ * Improved as number vs as string handling in irrpt_fetch
+ * Updated config for correct default cvs path
+ * Improved ioverall as/as-set input format checking
+ * Changed irrpt_list_prefixes to provide aggregated v6 routes in compressed
+   form instead of expanded
+ * Added command lines options for seperate v4 and v6 perfix list names
+ * Added warning when 0 routes found for AS
+ * Added v4/v6 command line switches to irrpt_list_ases
+ * Better input validation for AS numbers and AS Sets as well as case sensitivity issues 
+   resolved
 
 1.28 - June 8 2015
 
