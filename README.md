@@ -4,6 +4,8 @@ IRRPT
 ### Sponsored by TorIX - The Toronto Internet Exchange
 * Originally written by Richard A Steenbergen <ras@e-gerbil.net>
 * Older versions can be found on sourceforge at [http://sourceforge.net/projects/irrpt/](http://sourceforge.net/projects/irrpt/)
+* IPv6 support added by Elisa Jasinska <elisa@bigwaveit.org> for version 2.0 
+* Bug Fixes provided by Anna Claiborne <domino@theshell.org> for version 2.0
 
 Summary
 -------
@@ -365,17 +367,52 @@ Thanks
 
 Joe Abley for the very useful aggregate tool which was used in initial 
 versions, Chris Morrow for nagging me into releasing this publicly, and all 
-the folks in the ChangeLog who helped pick out the bugs.
+the folks in the ChangeLog who helped pick out the bugs. 
+
+A special thanks to Jon Nistor for many many rounds of QA for version 2.0.
 
 Change Log
 -------
 
-1.29 - August 30 2015
+1.29 - October 22 2015
+
+Changes for version 1.29 by Anna Claiborne <domino@theshell.org>:
+ * Tagging new version as 2.0.
+ * Removed system calls from configure.php
+ * Updated configure.php print out to be more easily parsible/readable.
+ * Updated readme docs for version 2.0
+
+1.29 - September 30 2015
 
 Changes for version 1.29 by Anna Claiborne <domino@theshell.org>:
 
- * Removed calls to system to concatenate v4/v6 route files.  Now performed by php function in utils.inc.
- * Provided support to leave email in irrdb.conf blank if the user wishes no email updates for a particular as/object.
+ * Created configure.php for initial setup and cvs directory restore.
+ * Fixed Force10 prefix list syntax in pfxgen.
+ * Fixed bugs found in running with PHP 7.
+ * Removed extra and eroneous space from generated emails.
+ * Fixed irrpt_fetch to check file ownership before attempting permission
+   changes.
+
+Changes for version 1.29 by Elisa Jasinska <elisa@bigwaveit.org>:
+
+ * Bug fix for irrpt_list_ases with -6/-4 as listing.
+ * Improved as number vs as string handling in irrpt_fetch.
+ * Updated config for correct default cvs path.
+ * Improved as/as-set input format checking.
+ * Changed irrpt_list_prefixes to provide aggregated v6 routes in compressed
+   form instead of expanded.
+ * Added command lines options for seperate v4 and v6 perfix list names.
+ * Added warning when 0 routes found for AS.
+ * Added v4/v6 command line switches to irrpt_list_ases.
+
+1.29 - August 31 2015
+
+Changes for version 1.29 by Anna Claiborne <domino@theshell.org>:
+
+ * Removed calls to system to concatenate v4/v6 route files.  Now performed by 
+   php function in utils.inc.
+ * Provided support to leave email in irrdb.conf blank if the user wishes no 
+   email updates for a particular as/object.
  * Fixed support for separate (correct) v4 and v6 prefix list for Juniper config.
  * Added AS validation/checking for pfxgen.
 
