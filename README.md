@@ -202,6 +202,7 @@ getting a lot of use out of this tool.
       format       - The output format for a specific router type (default: cisco)
                      Currently supported values are:
                      cisco
+		     ciscoxr
                      extreme
                      foundry
                      force10

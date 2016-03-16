@@ -39,6 +39,9 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v
 	    case 'cisco':
 		pfxlist_generate_cisco($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
 		break;
+	    case 'iosxr':
+		pfxlist_generate_iosxr($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
+		break;
 	    case 'juniper':
 		pfxlist_generate_juniper($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
 		break;
@@ -158,6 +161,84 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
 
 	printf("end\n");
 	printf("write mem\n");
+
+	return 0;
+}
+
+function pfxlist_generate_iosxr($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6)
+{
+	$pfxname = sprintf($pfxstr, $asn);
+	$pfxname_v6 = sprintf($pfxstr_v6, $asn);
+	$pfx1st = 'Y';
+	$pfx1st_v6 = 'Y';
+	global $cfg;
+
+	printf("conf\n");
+  if( $o_4 == 1 && $o_6 == 0 )
+  {
+    printf("no prefix-set %s\n", $pfxname);
+  }
+  elseif( $o_6 == 1 && $o_4 == 0 )
+  {
+    printf("no prefix-set %s\n", $pfxname_v6);
+  }
+  else
+  {
+    printf("no prefix-set %s\n", $pfxname);
+    printf("no prefix-set %s\n", $pfxname_v6);
+  }
+
+	while (!feof($pfxfile)) {
+		if (!($line = rtrim(fgets($pfxfile, 64))))
+			continue;
+
+		$prefix = explode("/", rtrim($line));
+		if ($pfx1st_v6 == 'N' && preg_match('/:/', $prefix[0]))
+			printf(",\n");
+		elseif (preg_match('/:/', $prefix[0]) && $pfx1st == 'N')
+		{
+			printf("\nend-set\n");
+			printf("prefix-set %s\n", $pfxname_v6);
+			$pfx1st_v6 = 'N';
+		}
+		elseif ($pfx1st_v6 == 'Y' && preg_match('/:/', $prefix[0]))
+		{
+			printf("prefix-set %s\n", $pfxname_v6);
+			$pfx1st_v6 = 'N';
+		}
+		elseif ($pfx1st == 'N')
+			printf(",\n");
+		else
+		{
+			$pfx1st = 'N';
+    			printf("prefix-set %s\n", $pfxname);
+		}
+
+
+    if (_ip_version($line) == '4')
+    {
+		  printf("  %s/%d", $prefix[0], $prefix[1]);
+  		if ($prefix[1] < $pfxlen)
+	  		printf(" le %s", $pfxlen);
+    }
+
+    elseif (_ip_version($line) == '6')
+    {
+		  printf("  %s/%d", $prefix[0], $prefix[1]);
+
+		  if ($prefix[1] < $pfxlen_v6)
+			  printf(" le %s", $pfxlen_v6);
+    }
+
+	}
+
+	if ($pfx1st == 'N' || $pfx1st_v6 == 'N')
+	{
+		printf("\n");
+		printf("end-set\n");
+	}
+	printf("commit\n");
+	printf("exit\n");
 
 	return 0;
 }

@@ -94,6 +94,11 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 			$o_format = "cisco";
 			break;
 
+		    case "ciscoxr":
+		    case "iosxr":
+			$o_format = "iosxr";
+			break;
+
 		    case "juniper":
 		    case "jnpr":
 			$o_format = "juniper";
