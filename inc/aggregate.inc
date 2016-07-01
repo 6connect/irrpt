@@ -94,6 +94,11 @@ function aggregate_routes($routefile)
     $current = explode("/", rtrim($addresses[0]));
     for ($i = 1; $i < $count; $i++)
     {
+      /** Since we're deleting from the same array we're looping through, we can
+          end up trying to access prefixes that no longer exist.  Don't do that in order
+          to avoid warnings */
+      if (!isset($addresses[$i])) continue;
+
       $next = explode("/", rtrim($addresses[$i]));
       /* If we picked up two different IP versions we can move on */
       if (_ip_version($current[0]) != _ip_version($next[0]))
