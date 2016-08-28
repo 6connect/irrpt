@@ -36,6 +36,7 @@ function usage($progname)
 	printf("  format       - The output format for a specific router type (default: %s)\n", $o_format);
 	printf("                 Currently supported values are:\n");
 	printf("                 cisco\n");
+        printf("                 ciscoxr\n");
 	printf("                 extreme\n");
 	printf("                 foundry\n");
 	printf("                 force10\n");
