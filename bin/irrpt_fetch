@@ -439,7 +439,7 @@ else
   fclose($irrdb); 
 }
 
-if( $o_quiet == 1 )
+if( $o_quiet == 0 )
 {
     status(STATUS_INFO, "Completed processing of {$count} IRR object(s).");
 }
