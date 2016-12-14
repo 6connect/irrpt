@@ -126,12 +126,12 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
   }
   elseif( $o_6 == 1 && $o_4 == 0 )
   {
-    printf("no ip prefix-list %s\n", $pfxname_v6);
+    printf("no ipv6 prefix-list %s\n", $pfxname_v6);
   }
   else
   {
     printf("no ip prefix-list %s\n", $pfxname);
-    printf("no ip prefix-list %s\n", $pfxname_v6);
+    printf("no ipv6 prefix-list %s\n", $pfxname_v6);
   }
 
 	while (!feof($pfxfile)) {
