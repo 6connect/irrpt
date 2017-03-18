@@ -27,12 +27,12 @@ function usage($progname)
 	global $o_pfxlen_v6;
 	global $o_format;
 
-	printf("Usage: %s [-h46] [-p pfxstr] [-p6 pfxstr_v6] [-l pfxlength] [-l6 pfxlength_v6] [-f format] <asn>\n",
+	printf("Usage: %s [-h46] [-p pfxstr] [-p6 pfxstr_v6] [-l pfxlen] [-l6 pfxlen_v6] [-f format] <asn>\n",
 		$progname);
 	printf("  pfxstr       - The prefix-list name format string (default: %s)\n", $o_pfxstr);
 	printf("  pfxstr_v6    - The prefix-list name format string (default: %s)\n", $o_pfxstr_v6);
-	printf("  pfxlength    - The max length more-specific that will be allowed (default: %s)\n", $o_pfxlen);
-	printf("  pfxlength_v6 - The max length more-specific that will be allowed for v6 (default: %s)\n", $o_pfxlen_v6);
+	printf("  pfxlen       - The max length more-specific that will be allowed (default: %s)\n", $o_pfxlen);
+	printf("  pfxlen_v6    - The max length more-specific that will be allowed for v6 (default: %s)\n", $o_pfxlen_v6);
 	printf("  format       - The output format for a specific router type (default: %s)\n", $o_format);
 	printf("                 Currently supported values are:\n");
 	printf("                 cisco\n");
@@ -66,13 +66,13 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 		break;
 
 	    case "-l":
-	    case "--pfxlength":
-                $o_pfxlength = $_SERVER['argv'][++$offset];
+	    case "--pfxlen":
+                $o_pfxlen = $_SERVER['argv'][++$offset];
 		break;
 
 	    case "-l6":
-	    case "--pfxlength_v6":
-                $o_pfxlength_v6 = $_SERVER['argv'][++$offset];
+	    case "--pfxlen_v6":
+                $o_pfxlen_v6 = $_SERVER['argv'][++$offset];
 		break;
 
       case "-4":
