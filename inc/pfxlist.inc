@@ -71,13 +71,30 @@ function pfxlist_generate_juniper($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 
 		if (_ip_version($line) == '4')
 		{
-			$formatted_line = sprintf("                route-filter %s upto /%d;\n", $line, $pfxlen);
+			$subnet_parts = explode("/", $line);
+			if( $subnet_parts[1] > $pfxlen )
+				continue;
+
+			if( $subnet_parts[1] == $pfxlen )
+			{
+				$formatted_line = sprintf("                route-filter %s exact;\n", $line);
+			} else {
+				$formatted_line = sprintf("                route-filter %s upto /%d;\n", $line, $pfxlen);
+			}
 			$v4_list[] = $formatted_line;
 		}
 		elseif (_ip_version($line) == '6')
 		{
 			$subnet_parts = explode("/", $line);
-			$formatted_line = sprintf("                route-filter %s prefix-length-range /%d-/%d;\n", $line, $subnet_parts[1], $pfxlen_v6);
+			if( $subnet_parts[1] > $pfxlen_v6 )
+				continue;
+
+			if( $subnet_parts[1] == $pfxlen_v6 )
+			{
+				$formatted_line = sprintf("                route-filter %s exact;\n", $line);
+			} else {
+				$formatted_line = sprintf("                route-filter %s prefix-length-range /%d-/%d;\n", $line, $subnet_parts[1], $pfxlen_v6);
+			}
 			$v6_list[] = $formatted_line;
 		}
 		else
@@ -126,12 +143,12 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
   }
   elseif( $o_6 == 1 && $o_4 == 0 )
   {
-    printf("no ip prefix-list %s\n", $pfxname_v6);
+    printf("no ipv6 prefix-list %s\n", $pfxname_v6);
   }
   else
   {
     printf("no ip prefix-list %s\n", $pfxname);
-    printf("no ip prefix-list %s\n", $pfxname_v6);
+    printf("no ipv6 prefix-list %s\n", $pfxname_v6);
   }
 
 	while (!feof($pfxfile)) {
@@ -139,10 +156,14 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
 			continue;
 
 		$prefix = explode("/", rtrim($line));
-
+	// $prefix[0] = cidr 10.0.0.0
+	// $prefix[1] = mask /26
 
     if (_ip_version($line) == '4')
     {
+		if( $prefix[1] > $pfxlen )
+			continue;
+	
 		  printf("ip prefix-list %s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
   		if ($prefix[1] < $pfxlen)
 	  		printf(" le %s", $pfxlen);
@@ -150,6 +171,8 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
 
     elseif (_ip_version($line) == '6')
     {
+		if( $prefix[1] > $pfxlen_v6 )
+			continue;
 		  printf("ipv6 prefix-list %s permit %s/%d", $pfxname_v6, $prefix[0], $prefix[1]);
 
 		  if ($prefix[1] < $pfxlen_v6)
@@ -217,6 +240,9 @@ function pfxlist_generate_iosxr($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
 
     if (_ip_version($line) == '4')
     {
+		if( $prefix[1] > $pfxlen )
+			continue;
+
 		  printf("  %s/%d", $prefix[0], $prefix[1]);
   		if ($prefix[1] < $pfxlen)
 	  		printf(" le %s", $pfxlen);
@@ -224,6 +250,9 @@ function pfxlist_generate_iosxr($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
 
     elseif (_ip_version($line) == '6')
     {
+		if( $prefix[1] > $pfxlen_v6 )
+			continue;
+
 		  printf("  %s/%d", $prefix[0], $prefix[1]);
 
 		  if ($prefix[1] < $pfxlen_v6)
@@ -279,6 +308,9 @@ function pfxlist_generate_extreme($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 
     if (_ip_version($line) == '4')
     {
+		if( $prefix[1] > $pfxlen )
+			continue;
+
 		  printf("configure access-profile %s add %d permit ipaddress %s/%d", $pfxname, $counter += 10, $prefix[0], $prefix[1]);
 		  if ($prefix[1] < $pfxlen)
       {
@@ -291,6 +323,9 @@ function pfxlist_generate_extreme($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
     }
     elseif (_ip_version($line) == '6')
     {
+		if( $prefix[1] > $pfxlen_v6 )
+			continue;
+
 		  printf("configure access-profile %s add %d permit ipaddress %s/%d", $pfxname_v6, $counter += 10, $prefix[0], $prefix[1]);
 		  if ($prefix[1] < $pfxlen_v6)
       {
@@ -324,6 +359,9 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 
 		if (_ip_version($line) == '4')
 		{
+			if( $prefix[1] > $pfxlen )
+				continue;
+
 			$formatted_line = sprintf("%s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
 			if ($prefix[1] < $pfxlen)
 				$formatted_line .= sprintf(" le %s", $pfxlen);
@@ -332,6 +370,9 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 		}
 		elseif (_ip_version($line) == '6')
 		{
+			if( $prefix[1] > $pfxlen_v6 )
+				continue;
+
 			$formatted_line = sprintf("%s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
 			if ($prefix[1] < $pfxlen)
 				$formatted_line .= sprintf(" le %s", $pfxlen);
