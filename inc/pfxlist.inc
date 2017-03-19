@@ -347,6 +347,7 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 {
 	$pfxname = sprintf($pfxstr, $asn);
 	$pfxname_v6 = sprintf($pfxstr_v6, $asn);
+	$v4_list = $v6_list = array();
 	global $cfg;
 
 	printf("conf t\n");
@@ -362,7 +363,7 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 			if( $prefix[1] > $pfxlen )
 				continue;
 
-			$formatted_line = sprintf("%s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
+			$formatted_line = sprintf("  permit %s/%d", $prefix[0], $prefix[1]);
 			if ($prefix[1] < $pfxlen)
 				$formatted_line .= sprintf(" le %s", $pfxlen);
 
@@ -373,9 +374,9 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 			if( $prefix[1] > $pfxlen_v6 )
 				continue;
 
-			$formatted_line = sprintf("%s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
-			if ($prefix[1] < $pfxlen)
-				$formatted_line .= sprintf(" le %s", $pfxlen);
+			$formatted_line = sprintf("  permit %s/%d", $prefix[0], $prefix[1]);
+			if ($prefix[1] < $pfxlen_v6)
+				$formatted_line .= sprintf(" le %s", $pfxlen_v6);
 
 			$v6_list[] = $formatted_line;
 		}
@@ -386,8 +387,8 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 		}
 	} //end while
 
-    pfxlist_print_force10($pfxname, $v4_list);
-    pfxlist_print_force10($pfxname_v6, $v6_list);
+	pfxlist_print_force10($pfxname, $v4_list, 4);
+	pfxlist_print_force10($pfxname_v6, $v6_list, 6);
 
 	printf("end\n");
 	printf("write mem\n");
@@ -395,18 +396,25 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 	return 0;
 }
 
-function pfxlist_print_force10($policy_name, $list) {
-
-    if(count($list) > 0) {
+function pfxlist_print_force10($policy_name, $list, $AF)
+{
+	if( count($list) > 0 )
+	{
+	    if( $AF == 4 )
+	    {
 		printf("no ip prefix-list %s\n", $policy_name);
 		printf("ip prefix-list %s\n", $policy_name);
+	    } else {
+		printf("no ipv6 prefix-list %s\n", $policy_name);
+		printf("ipv6 prefix-list %s\n", $policy_name);
+	    }
+	}
 
-        foreach($list as $line) {
+        foreach( $list as $line )
+	{
             print $line;
-			      printf("\n");
+	    printf("\n");
         }
-    }
-
 }
 
 ?>
