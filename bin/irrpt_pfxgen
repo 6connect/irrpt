@@ -116,7 +116,7 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 			$o_format = "force10";
 			break;
 
-		    case "opnebgpd":
+		    case "openbgpd":
 		    case "obgpd":
 			$o_format = "openbgpd";
 			break;
