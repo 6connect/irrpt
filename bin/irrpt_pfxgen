@@ -41,6 +41,7 @@ function usage($progname)
 	printf("                 foundry\n");
 	printf("                 force10\n");
 	printf("                 juniper\n");
+	printf("                 openbgpd\n");
 	exit(1);
 }
 
@@ -113,6 +114,11 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 		    case "force10":
 		    case "f10":
 			$o_format = "force10";
+			break;
+
+		    case "opnebgpd":
+		    case "obgpd":
+			$o_format = "openbgpd";
 			break;
 
 		    default:
