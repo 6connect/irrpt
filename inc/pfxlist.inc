@@ -51,6 +51,9 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v
 	    case 'force10':
 		pfxlist_generate_force10($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
 		break;
+	    case 'openbgpd':
+		pfxlist_generate_openbgpd($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
+		break;
 	    default:
 		break;
 	}
@@ -415,6 +418,58 @@ function pfxlist_print_force10($policy_name, $list, $AF)
             print $line;
 	    printf("\n");
         }
+}
+
+function pfxlist_generate_openbgpd($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6)
+{
+	$pfxname = sprintf($pfxstr, $asn);
+	$pfxname_v6 = sprintf($pfxstr_v6, $asn);
+	$v4_list = $v6_list = array();
+	global $cfg;
+
+	// printf("conf t\n");
+
+	while (!feof($pfxfile)) {
+          if (!($line = rtrim(fgets($pfxfile, 64))))
+            continue;
+
+		$prefix = explode("/", rtrim($line));
+
+		if (_ip_version($line) == '4')
+		{
+			if( $prefix[1] > $pfxlen )
+				continue;
+
+			$formatted_line = sprintf(" allow from any peer-as %d prefix %s/%d", $asn, $prefix[0], $prefix[1]);
+			if ($prefix[1] < $pfxlen)
+				$formatted_line .= sprintf(" <= %s", $pfxlen);
+
+			$v4_list[] = $formatted_line;
+			printf($formatted_line . "\n");
+		}
+		elseif (_ip_version($line) == '6')
+		{
+			if( $prefix[1] > $pfxlen_v6 )
+				continue;
+
+			$formatted_line = sprintf(" allow from any peer-as %d prefix %s/%d", $asn, $prefix[0], $prefix[1]);
+			if ($prefix[1] < $pfxlen_v6)
+				$formatted_line .= sprintf(" <= %s", $pfxlen_v6);
+
+			$v6_list[] = $formatted_line;
+			printf($formatted_line . "\n");
+		}
+		else
+		{
+		  status(STATUS_ERROR, "Prefix not recognized: {$line}");
+		  return FALSE;
+		}
+	} //end while
+
+	// pfxlist_print_openbgpd($pfxname, $v4_list, 4);
+	// pfxlist_print_openbgpd($pfxname_v6, $v6_list, 6);
+
+	return 0;
 }
 
 ?>
