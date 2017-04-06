@@ -21,8 +21,9 @@ $cvs		= new CVS;		/* Open our CVS class */
 $count		= 0;
 $offset		= 0;
 $o_quiet	= 0;
-$o_cvs	= 1;
-$o_irrdb = null;
+$o_cvs		= 1;
+$o_irrdb	= NULL;
+$o_irrdbConf	= array();
 
 function track($file)
 {
@@ -189,7 +190,7 @@ function process_as($asString, $asNumber, $count, $object, $irr, $email, $o_quie
   global $cfg;
 
 	if( $o_quiet == 0 )
-		status(STATUS_INFO, "Processing {$asString} (Record {$count})");
+		status(STATUS_INFO, "Processing {$asString} [$object] (Record {$count})");
 
 	/* Figure out if we have an AUT-NUM or an AS-SET, and resolve it */
 	status(STATUS_NOTICE, "Querying IRR Object {$object}");
@@ -290,6 +291,57 @@ function process_as($asString, $asNumber, $count, $object, $irr, $email, $o_quie
   }
 }
 
+function load_irrdb($o_quiet, $o_irrdbfile)
+{
+    global $cfg;
+    global $o_irrdbConf;
+    $count	= 0;
+
+    // Load the IRRDB file and store entries into a hash
+    if (!($irrdb = fopen($cfg['cfgfiles']['irrdb_list'], "r"))) 
+    {
+	status(STATUS_ERROR, "Unable to open irrdb config file, aborting.");
+	exit(-1);
+    }
+
+    /* Parse the IRRDB config file */
+    while( !feof($irrdb) )
+    {
+	$line	= rtrim(fgets($irrdb, 256));
+
+	/* Skip comments and junk lines */
+	if ((strlen($line) == 0) || ($line[0] == "#"))
+		continue;
+
+	/* Skip lines that do not start with a number */
+	if( ! preg_match("/^[\d+]/", $line) )
+		continue;
+
+	$results	= preg_split( "/[ \t]+/", $line);
+	$asNumber	= $results[0];
+	$object		= $results[1];
+
+	if( isset($results[2]) && filter_var($results[2], FILTER_VALIDATE_EMAIL) )
+	{
+	    $email	= $results[2]; //email is optional in the config
+	} else {
+	    $email	= NULL;
+	}
+
+	$asString = "AS" . $asNumber;
+
+	$count++;
+
+	if( ! isset($o_irrdbConf[$asNumber]) )
+	{
+		$o_irrdbConf[$asNumber]['asn']		= $asNumber;
+		$o_irrdbConf[$asNumber]['email']	= $email;
+		$o_irrdbConf[$asNumber]['object']	= $object;
+	}
+    }
+    fclose($irrdb); 
+}
+
 /********** PROCESSING STARTS HERE *********/
 
 
@@ -313,6 +365,7 @@ if (posix_geteuid() == 0) {
 if ($cfg['tools']['nocvs']) {
   $o_cvs = 0;
 }
+
 
 /* Parse through the cmdline options. */
 for ($offset = 1; $offset < $_SERVER['argc']; $offset++) 
@@ -360,10 +413,11 @@ ini_set("memory_limit",$cfg['global']['memory_limit']);
 
 /* Open the file with the list of IRR objects we will be tracking */
 /* provided via command line or through the config file */
-if ($o_irrdb)
+if( $o_irrdb )
 {
   $cfg['cfgfiles']['irrdb_list'] = $o_irrdb;
 }
+load_irrdb($o_quiet,$cfg['cfgfiles']['irrdb_list']);
 
 /* Establish a connection with our IRR Query whois server */
 if ($irr->connect($cfg['fetch']['host'], $cfg['fetch']['port']) == FALSE) 
@@ -384,25 +438,57 @@ if ($cfg['fetch']['sources'] != "all")
 }
 
 // check AS parameter if provided 
-if (isset($_SERVER['argv'][$offset+0]))
+if( isset($_SERVER['argv'][$offset+0]) )
 {
-  if (preg_match("/^AS./i", $_SERVER['argv'][$offset+0])) {
-  	$asString = strtoupper($_SERVER['argv'][$offset+0]);
+  if( preg_match("/^AS./i", $_SERVER['argv'][$offset+0]) )
+  {
+	// MATCH: Object listed as AS12345 or AS-ALPHATEST
+	$asString = strtoupper($_SERVER['argv'][$offset+0]);
+	$object	  = $asString;
 
-    $asNumber = preg_replace("/[aA][sS]/", "", $asString);
-    if ( !is_numeric($asNumber) ) {
-      $asNumber = $asString;
-    }
-    $count++;
-    process_as($asString, $asNumber, $count, $asString, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
+	$asNumber = preg_replace("/[aA][sS]/", "", $asString);
+	if ( !is_numeric($asNumber) )
+	{
+	    $asNumber = $asString;
+	}
+
+	$count++;
+
+	// NOTE: NOT ENABLED
+	// This section intentionally left out for people who wish
+	// to pull routes for a single ASN, ie: AS12345 instead of 
+	// having it lookup the object ID for AS 12345 which might be
+	// AS-ALPHATEST
+	//
+	//status(STATUS_INFO, "DBG: matched /^AS./i as $asNumber.");
+	//if( isset($o_irrdbConf[$asNumber]['object']) )
+	//{
+	//	$object	= $o_irrdbConf[$asNumber]['object'];
+	//} else {
+	//	$object = $asString;
+	//}
+	// status(STATUS_INFO, "PAS: $asString, $asNumber, cnt: $count, str: $object, 'none', $o_quiet, $o_4, $o_6, $o_cvs");
+	process_as($asString, $asNumber, $count, $object, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
   }
-  elseif ( is_numeric($_SERVER['argv'][$offset+0]) && (int)$_SERVER['argv'][$offset+0] > 0 && (int)$_SERVER['argv'][$offset+0] <= 4294967295) {
-  	$asString = "AS" . $_SERVER['argv'][$offset+0];
-    $asNumber = $_SERVER['argv'][$offset+0];
-    $count++;
-    process_as($asString, $asNumber, $count, $asString, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
+  elseif ( is_numeric($_SERVER['argv'][$offset+0]) &&
+	    (int)$_SERVER['argv'][$offset+0] > 0
+	    && (int)$_SERVER['argv'][$offset+0] <= 4294967295)
+  {
+	$asString = "AS" . $_SERVER['argv'][$offset+0];
+	$asNumber = $_SERVER['argv'][$offset+0];
+	$count++;
+
+	//
+	if( isset($o_irrdbConf[$asNumber]['object']) )
+	{
+		$object	= $o_irrdbConf[$asNumber]['object'];
+	} else {
+		$object = $asString;
+	}
+	process_as($asString, $asNumber, $count, $object, $irr, 'none', $o_quiet, $o_4, $o_6, $o_cvs);
   }
-  else {
+  else
+  {
     status(STATUS_ERROR, "Invalid AS or AS-SET input, aborting.");
     exit(-1);
   }
@@ -410,33 +496,27 @@ if (isset($_SERVER['argv'][$offset+0]))
 
 else 
 {
-  if (!($irrdb = fopen($cfg['cfgfiles']['irrdb_list'], "r"))) 
-  {
-	  status(STATUS_ERROR, "Unable to open irrdb config file, aborting.");
-	  exit(-1);
-  }
+    // NOTE: Cycle through array for ASN numbers and their objects
+    status(STATUS_INFO, "Reading irrdbConf array list for ASNs, Objects, Email");
+    $count = 0;
+    foreach( $o_irrdbConf as $v1 )
+    {
+	$count++;
+	foreach( $v1 as $v2 )
+	{
+		//print "----\n";
+		//print "V1 ASN: " . $v1['asn'] . "\n";
+		//print "V1 Obj: " . $v1['object'] . "\n";
+		//print "V1 Ema: " . $v1['email'] . "\n";
 
-  /* Parse the IRRDB config file */
-  while (!feof($irrdb)) 
-  {
-    $line		= rtrim(fgets($irrdb, 256));
+		$asString	= "AS" . $v1['asn'];
+		$asNumber	= $v1['asn'];
+		$object		= $v1['object'];
+		$email		= $v1['email'];
+	}
 
-    /* Skip comments and junk lines */
-    if ((strlen($line) == 0) || ($line[0] == "#"))
-      continue;
-
-    $results	= preg_split( "/[ \t]+/", $line);
-    $asNumber = $results[0];
-    $object		= $results[1];
-    if(isset($results[2])) { $email        = $results[2]; } //email is optional in the config
-	else { $email = null; }
-
-    $asString = "AS" . $asNumber;
-
-    $count++;
-    process_as( $asString, $asNumber, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $o_cvs);
-  }
-  fclose($irrdb); 
+    	process_as( $asString, $asNumber, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $o_cvs);
+    } // END: foreach $o_irrdbConf
 }
 
 if( $o_quiet == 0 )
