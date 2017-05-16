@@ -42,6 +42,7 @@ function usage($progname)
 	printf("                 force10\n");
 	printf("                 juniper\n");
 	printf("                 openbgpd\n");
+	printf("                 edgeos\n");
 	exit(1);
 }
 
@@ -119,6 +120,10 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 		    case "openbgpd":
 		    case "obgpd":
 			$o_format = "openbgpd";
+			break;
+
+		    case "edgeos":
+			$o_format = "edgeos";
 			break;
 
 		    default:
