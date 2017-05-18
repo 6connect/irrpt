@@ -54,6 +54,9 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v
 	    case 'openbgpd':
 		pfxlist_generate_openbgpd($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
 		break;
+	    case 'edgeos':
+		pfxlist_generate_edgeos($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
+		break;
 	    default:
 		break;
 	}
@@ -468,6 +471,76 @@ function pfxlist_generate_openbgpd($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen,
 
 	// pfxlist_print_openbgpd($pfxname, $v4_list, 4);
 	// pfxlist_print_openbgpd($pfxname_v6, $v6_list, 6);
+
+	return 0;
+}
+
+function pfxlist_generate_edgeos($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6)
+{
+	$pfxname = sprintf($pfxstr, $asn);
+	$pfxname_v6 = sprintf($pfxstr_v6, $asn);
+	global $cfg;
+	$rule = 0;
+	$rule_v6 = 0;
+
+	printf("configure\n");
+
+	if( $o_4 == 1 && $o_6 == 0 )
+	{
+		printf("delete policy prefix-list %s\n", $pfxname);
+	}
+	elseif( $o_6 == 1 && $o_4 == 0 )
+	{
+		printf("delete policy prefix-list6 %s\n", $pfxname_v6);
+	}
+	else
+	{
+		printf("delete policy prefix-list %s\n", $pfxname);
+		printf("delete policy prefix-list6 %s\n", $pfxname_v6);
+	}
+
+	while (!feof($pfxfile)) {
+          if (!($line = rtrim(fgets($pfxfile, 64))))
+            continue;
+
+		$prefix = explode("/", rtrim($line));
+
+		if (_ip_version($line) == '4')
+		{
+			if( $prefix[1] > $pfxlen )
+				continue;
+
+			$rule = $rule + 1;
+
+			printf("set policy prefix-list %s rule %d prefix %s/%d\n", $pfxname, $rule, $prefix[0], $prefix[1]);
+
+			if ($prefix[1] < $pfxlen)
+				printf("set policy prefix-list %s rule %d le %s\n", $pfxname, $rule, $pfxlen);
+		}
+
+		elseif (_ip_version($line) == '6')
+		{
+
+			if( $prefix[1] > $pfxlen_v6 )
+				continue;
+
+			$rule_v6 = $rule_v6 + 1;
+
+			printf("set policy prefix-list6 %s rule %d prefix %s/%d\n", $pfxname_v6, $rule_v6, $prefix[0], $prefix[1]);
+
+			if ($prefix[1] < $pfxlen_v6)
+				printf("set policy prefix-list6 %s rule %d le %s\n", $pfxname_v6, $rule_v6, $pfxlen_v6);
+
+		}
+		else
+		{
+		  status(STATUS_ERROR, "Prefix not recognized: {$line}");
+		  return FALSE;
+		}
+	} //end while
+
+	printf("commit\n");
+	printf("save\n");
 
 	return 0;
 }
