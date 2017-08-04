@@ -266,23 +266,23 @@ function process_as($asString, $asNumber, $count, $object, $irr, $email, $o_quie
 
   	$rev = track($routefile4);
 	  $rev = track($routefile6);
-  	$rev = track($aggfile);
 	  $rev = track($aggfile4);
   	$rev = track($aggfile6);
 	  $rev = track($routefile);
+  	$rev_a = track($aggfile);
 
 	  /* Send e-mail updates */
 	status(STATUS_NOTICE, "Send update email.");
   	switch ($cfg['fetch']['emailonchange']) {
 		case "both":
 			update_email($routefile, $email, $asString, $object, $rev, "Full");
-			update_email($aggfile, $email, $asString, $object, $rev, "Aggregated");
+			update_email($aggfile, $email, $asString, $object, $rev_a, "Aggregated");
 			break;
 		case "full":
 			update_email($routefile, $email, $asString, $object, $rev, "Full");
 			break;
 		case "aggregate":
-			update_email($aggfile, $email, $asString, $object, $rev, "Aggregated");
+			update_email($aggfile, $email, $asString, $object, $rev_a, "Aggregated");
 			break;
 	      case "none":
 	      case "no":
