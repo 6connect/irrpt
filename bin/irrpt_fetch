@@ -264,12 +264,12 @@ function process_as($asString, $asNumber, $count, $object, $irr, $email, $o_quie
   	$cvs->init($cfg['paths']['cvsroot']);
 	check_file_perms($cfg['paths']['cvsroot']);
 
-	  $rev = track($routefile);
   	$rev = track($routefile4);
 	  $rev = track($routefile6);
   	$rev = track($aggfile);
 	  $rev = track($aggfile4);
   	$rev = track($aggfile6);
+	  $rev = track($routefile);
 
 	  /* Send e-mail updates */
 	status(STATUS_NOTICE, "Send update email.");
