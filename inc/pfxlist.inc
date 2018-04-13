@@ -57,6 +57,9 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v
 	    case 'edgeos':
 		pfxlist_generate_edgeos($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
 		break;
+	    case "huawei":
+		pfxlist_generate_huawei($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
+		break;
 	    default:
 		break;
 	}
@@ -541,6 +544,69 @@ function pfxlist_generate_edgeos($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $
 
 	printf("commit\n");
 	printf("save\n");
+
+	return 0;
+}
+
+function pfxlist_generate_huawei($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6) {
+	$pfxname = sprintf($pfxstr, $asn);
+	$pfxname_v6 = sprintf($pfxstr_v6, $asn);
+	global $cfg;
+
+	printf("system-view\n");
+
+	if( $o_4 == 1 && $o_6 == 0 )
+	{
+		printf("undo ip ip-prefix %s\n", $pfxname);
+	}
+	elseif( $o_6 == 1 && $o_4 == 0 )
+	{
+		printf("undo ip ipv6-prefix %s\n", $pfxname_v6);
+	}
+	else
+	{
+		printf("undo ip ip-prefix %s\n", $pfxname);
+		printf("undo ip ipv6-prefix %s\n", $pfxname_v6);
+	}
+
+	while (!feof($pfxfile)) {
+		if (!($line = rtrim(fgets($pfxfile, 64))))
+			continue;
+
+		$prefix = explode("/", rtrim($line));
+
+		if (_ip_version($line) == '4')
+		{
+			if( $prefix[1] > $pfxlen )
+				continue;
+	
+			printf("ip ip-prefix %s permit %s %d", $pfxname, $prefix[0], $prefix[1]);
+			if ($prefix[0] == "0.0.0.0") {
+				printf(" match-network");
+			}
+			if ($prefix[1] < $pfxlen)
+				printf(" le %s", $pfxlen);
+			}
+
+		elseif (_ip_version($line) == '6')
+		{
+			if( $prefix[1] > $pfxlen_v6 )
+				continue;
+        
+			printf("ip ipv6-prefix %s permit %s %d", $pfxname_v6, $prefix[0], $prefix[1]);
+			if ($prefix[0] == "::")
+				printf(" match-network");
+
+			if ($prefix[1] < $pfxlen_v6)
+				printf(" le %s", $pfxlen_v6);
+			}
+
+		printf("\n");
+	}
+
+	printf("return\n");
+	printf("save\n");
+	printf("y\n");
 
 	return 0;
 }
