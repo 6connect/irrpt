@@ -208,6 +208,7 @@ getting a lot of use out of this tool.
                      force10
                      juniper
                      edgeos
+                     huawei
 
 Examples:
 
@@ -221,6 +222,8 @@ Examples:
     ...
     $ bin/irrpt_pfxgen -f edgeos 42
     ...
+    $ bin/irrpt_pfxgen -f huawei 42
+    ...
 
 In this stage, actual router configurations are generated based on 
 the aggregated data we have stored. Currently only the following 
@@ -231,6 +234,7 @@ formats are supported, but it should be trivial to add new ones:
 3. Extreme format
 4. Force10 format
 5. EdgeOS format (Vyos/Vyatta should also work)
+6. Huawei format
 
 These configs can then be deployed automatically using a variety of 
 existing tools. Some of these tools include:

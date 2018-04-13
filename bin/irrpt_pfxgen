@@ -43,6 +43,7 @@ function usage($progname)
 	printf("                 juniper\n");
 	printf("                 openbgpd\n");
 	printf("                 edgeos\n");
+	printf("                 huawei\n");
 	exit(1);
 }
 
@@ -124,6 +125,10 @@ for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
 
 		    case "edgeos":
 			$o_format = "edgeos";
+			break;
+            
+		    case "huawei":
+			$o_format = "huawei";
 			break;
 
 		    default:
