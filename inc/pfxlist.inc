@@ -220,13 +220,19 @@ function pfxlist_generate_iosxr($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
     printf("no prefix-set %s\n", $pfxname_v6);
   }
 
+  $skipcomma = false;
+
 	while (!feof($pfxfile)) {
 		if (!($line = rtrim(fgets($pfxfile, 64))))
 			continue;
 
 		$prefix = explode("/", rtrim($line));
-		if ($pfx1st_v6 == 'N' && preg_match('/:/', $prefix[0]))
-			printf(",\n");
+		if ($pfx1st_v6 == 'N' && preg_match('/:/', $prefix[0])) {
+			if ($skipcomma)
+				$skipcomma = false;
+			else
+				printf(",\n");
+		}
 		elseif (preg_match('/:/', $prefix[0]) && $pfx1st == 'N')
 		{
 			printf("\nend-set\n");
@@ -239,7 +245,12 @@ function pfxlist_generate_iosxr($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
 			$pfx1st_v6 = 'N';
 		}
 		elseif ($pfx1st == 'N')
-			printf(",\n");
+		{
+			if ($skipcomma)
+				$skipcomma = false;
+			else
+				printf(",\n");
+		}
 		else
 		{
 			$pfx1st = 'N';
@@ -250,7 +261,10 @@ function pfxlist_generate_iosxr($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
     if (_ip_version($line) == '4')
     {
 		if( $prefix[1] > $pfxlen )
+		{
+			$skipcomma = true;
 			continue;
+		}
 
 		  printf("  %s/%d", $prefix[0], $prefix[1]);
   		if ($prefix[1] < $pfxlen)
@@ -260,7 +274,10 @@ function pfxlist_generate_iosxr($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
     elseif (_ip_version($line) == '6')
     {
 		if( $prefix[1] > $pfxlen_v6 )
+		{
+			$skipcomma = true;
 			continue;
+		}
 
 		  printf("  %s/%d", $prefix[0], $prefix[1]);
 
