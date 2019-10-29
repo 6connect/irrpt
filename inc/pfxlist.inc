@@ -120,7 +120,7 @@ function pfxlist_generate_juniper($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
 
 function pfxlist_print_juniper($policy_name, $list) {
 
-	if(count( (array) $list > 0))
+	if( !empty($list) )
 	{
 		printf("policy-options {\n");
 		printf("    replace: policy-statement %s {\n", $policy_name);
@@ -136,8 +136,14 @@ function pfxlist_print_juniper($policy_name, $list) {
 		printf("        then reject;\n");
 		printf("    }\n");
 		printf("}\n");
+	} else {
+		// Reject all entries
+		printf("policy-options {\n");
+		printf("    replace: policy-statement %s {\n", $policy_name);
+		printf("        then reject;\n");
+		printf("    }\n");
+		printf("}\n");
 	}
-
 }
 
 function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6)
