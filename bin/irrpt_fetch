@@ -422,7 +422,8 @@ load_irrdb($o_quiet,$cfg['cfgfiles']['irrdb_list']);
 /* Establish a connection with our IRR Query whois server */
 if ($irr->connect($cfg['fetch']['host'], $cfg['fetch']['port']) == FALSE) 
 {
-	status(STATUS_ERROR, "Unable to connect to IRR Query whois server, aborting.");
+	status(STATUS_ERROR, "Unable to connect to IRR Query whois server " . 
+	       $cfg['fetch']['host'] . ", aborting.");
 	exit(-1);
 }
 
