@@ -7,6 +7,7 @@ IRRPT
 * IPv6 support added by Elisa Jasinska <elisa@bigwaveit.org> for version 2.0 
 * Bug Fixes provided by Anna Claiborne <domino@theshell.org> for version 2.0
 
+
 Summary
 -------
 
@@ -382,6 +383,26 @@ A special thanks to Jon Nistor for many many rounds of QA for version 2.0.
 
 Change Log
 -------
+
+2.1 - Nov 2019 (release pending)
+ * Add: pfxgen added support for iosXR
+ * Add: pfxgen added support for Ubiquity EdgeOS (@mikenowak)
+ * Add: pfxgen added support for openbgpd
+ * Add: pfxgen added support for Huawei (@miuvlad)
+
+ * Enh: more help options
+ * Enh: AS Object name is now fetched when run via the CLI by specifying a single AS number
+
+ * Fix: undefined offset in aggreagte.inc
+ * Fix: cosmetic issue on completed notices
+ * Fix: remove Cisco prefix-list associated with proper address family
+ * Fix: prefix lengths not properly checked (juniper, iosxr, f10, extreme)
+ * Fix: Force10 pfxgen syntax issue
+ * Fix: Email notifications comparing full routue and full agg file (@gawul)
+ * Fix: iosXR pfxgen generates blank entry for prefixes not matching length (@bonev)
+ * Fix: PHP 7.2.0 behaviour change using count(), fixed errors under Juniper pfxgen
+ * Fix: Mask php errors for connection timeout, report proper host timeout.
+ * Fix: reduced connection timeout to 15s, down from 30s.
 
 2.0 - Aug / Sep / Oct 2015
 
