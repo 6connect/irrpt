@@ -199,10 +199,10 @@ class IRRQuery {
     $this->host = $host;
     $this->port = $port;
 
-    $this->fp = fsockopen($host, $port, $errno, $errstr, 30);
+    @$this->fp = fsockopen($host, $port, $errno, $errstr, 15);
 
     if (!$this->fp) {
-      status_error(STATUS_ERROR, "{$errstr} ({$errno})");
+      status(STATUS_ERROR, "{$errstr} (errno {$errno})");
       return FALSE;
     }
 
