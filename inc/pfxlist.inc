@@ -39,7 +39,7 @@ function pfxlist_generate($format, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v
 	    case 'cisco':
 		pfxlist_generate_cisco($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
 		break;
-	    case 'iosxr':
+	    case 'ciscoxr':
 		pfxlist_generate_iosxr($pfxfile, $asn_number, $pfxstr, $pfxstr_v6, $pfxlen, $pfxlen_v6, $o_4, $o_6);
 		break;
 	    case 'juniper':
