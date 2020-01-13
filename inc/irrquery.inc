@@ -329,18 +329,27 @@ class IRRQuery {
       return $results;
 
     /* Get v6 prefixes */
-
     $this->_send("!6{$origin}\n");
     if (($results = $this->_response()) == FALSE)
     {
       return FALSE;
-    }
 
-    else 
-    {
+    } else {
+
       $results = explode(" ", $results);
 
       $results = array_map('strtolower', $results);
+
+      /* FIX: Re-process all entries to force IPv6 compression */
+      $routes6tmp = array();
+      foreach( $results as $loop_v6 )
+      {
+          list($v6_network, $v6_mask) = explode("/", $loop_v6);
+          $v6_compress = inet_ntop(inet_pton($v6_network)) . "/$v6_mask";
+          array_push($routes6tmp, $v6_compress);
+      }
+      $results = $routes6tmp;
+
       natsort($results);
       $results = array_values(array_unique($results));
 
