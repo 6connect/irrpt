@@ -350,6 +350,7 @@ class IRRQuery {
       }
       $results = $routes6tmp;
 
+
       natsort($results);
       $results = array_values(array_unique($results));
 

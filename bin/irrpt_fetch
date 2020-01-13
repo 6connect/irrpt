@@ -10,10 +10,11 @@ require("{$currentpath}/../inc/cvs.inc");
 require("{$currentpath}/../inc/status.inc");
 require("{$currentpath}/../inc/ipv6.inc");
 require("{$currentpath}/../inc/utils.inc");
+require("{$currentpath}/../inc/helpers.inc");
 
 
 $o_asn		= 0;			/* Default ASN to fetch: all */
-$o_verbose      = 0;			/* Default to verbose off */
+$o_verbose      = 1;			/* Default to verbose off */
 $o_4 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
 $o_6 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
 $irr		= new IRRQuery;		/* Open our IRRQuery class */
@@ -134,54 +135,62 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
 
 function process_v6($irr, $object, $routefile6, $aggfile6)
 {
-	global $cfg;
+    global $cfg;
 
-  $routes6 = array();
-  $asnlist6 = array();
+    $routes6	= array();
+    $asnlist6	= array();
 
-  $resolve_v6_result = resolve_v6($irr, $object);
-  list($routes6, $asnlist6) = $resolve_v6_result;
+    $resolve_v6_result = resolve_v6($irr, $object);
+    $routes6tmp		= array();
+    list($routes6, $asnlist6) = $resolve_v6_result;
 
-	/* Strip out excluded routes that can not be registered */
-	status(STATUS_NOTICE, "Filtering against excluded routes.");
-	$routes6 = exclusions_filter($cfg['cfgfiles']['exclusions'], $routes6);
+    /* Strip out excluded routes that can not be registered */
+    status(STATUS_NOTICE, "Filtering against excluded routes.");
+    $routes6 = exclusions_filter($cfg['cfgfiles']['exclusions'], $routes6);
 
-	/* Write the routes we've just looked up into a file */
-	status(STATUS_NOTICE, "Writing routes to local database.");
-  if (($output6 = fopen($routefile6, "w")) == FALSE) 
-  {
+
+    /* Write the routes we've just looked up into a file */
+    status(STATUS_NOTICE, "Writing routes to local database.");
+
+
+    /* Write routes to file */
+    if( ($output6 = fopen($routefile6, "w")) == FALSE ) 
+    {
 		status(STATUS_WARNING, "Can not open IRRDB output file for {$asString}, skipping this record.");
-  }
-  if (is_array($routes6))
-  {
-    for($i = 0; $i < sizeof($routes6); $i++)
-    {
-		  fwrite($output6, sprintf("%s\n", $routes6[$i]));
     }
-  }
-	fclose($output6);
-  update_file_permissions($routefile6, $cfg['cfgfiles']['umask']);
 
-	/* Aggregate the route file */
-	status(STATUS_NOTICE, "Aggregating v6 routes.");
-  $aggregated_routes6 = aggregate_routes($routefile6);
-
-  /* print result to a file */
-  if (($afile6 = fopen($aggfile6, "w")) == FALSE)
-  {
-    status(STATUS_WARNING, "Can not open agg route file, skipping this record.");
-  }
-  if (is_array($aggregated_routes6))
-  {
-    for ($i = 0; $i < sizeof($aggregated_routes6); $i++)
+    if( is_array($routes6) )
     {
-      fwrite($afile6, "$aggregated_routes6[$i]");
+	for($i = 0; $i < sizeof($routes6); $i++)
+	{
+		fwrite($output6, sprintf("%s\n", $routes6[$i]));
+	}
     }
-  }
-  fclose($afile6);
-  update_file_permissions($aggfile6, $cfg['cfgfiles']['umask']);
+    fclose($output6);
 
-  return $asnlist6;
+
+    update_file_permissions($routefile6, $cfg['cfgfiles']['umask']);
+
+    /* Aggregate the route file */
+    status(STATUS_NOTICE, "Aggregating v6 routes.");
+    $aggregated_routes6 = aggregate_routes($routefile6);
+
+    /* print result to a file */
+    if (($afile6 = fopen($aggfile6, "w")) == FALSE)
+    {
+      status(STATUS_WARNING, "Can not open agg route file, skipping this record.");
+    }
+    if (is_array($aggregated_routes6))
+    {
+      for ($i = 0; $i < sizeof($aggregated_routes6); $i++)
+      {
+        fwrite($afile6, "$aggregated_routes6[$i]");
+      }
+    }
+    fclose($afile6);
+    update_file_permissions($aggfile6, $cfg['cfgfiles']['umask']);
+
+    return $asnlist6;
 }
 
 function process_as($asString, $asNumber, $count, $object, $irr, $email, $o_quiet, $o_4, $o_6, $o_cvs)
