@@ -70,8 +70,8 @@ will hopefully lead to more accurate data and a more effective system.
 Requirements
 ------------
 
-* PHP          >= 5.6     (http://www.php.net/downloads.php)
-* CVS                     (http://www.gnu.org/software/cvs/)
+* PHP          >= 7.2.0   (http://www.php.net/downloads.php)
+* CVS          Optional   (http://www.gnu.org/software/cvs/)
 * CVSweb       Optional   (http://people.freebsd.org/~scop/cvsweb/)
 
 
