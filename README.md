@@ -384,7 +384,7 @@ A special thanks to Jon Nistor for many many rounds of QA for version 2.0.
 Change Log
 -------
  
-2.1 - Dec 2019 (release pending)
+2.1 - Jan 2020 (release pending)
 
  * Add: pfxgen added support for iosXR
  * Add: pfxgen added support for Ubiquity EdgeOS (@mikenowak)
@@ -403,6 +403,9 @@ Change Log
  * Fix: Mask php errors for connection timeout, report proper host timeout.
  * Fix: reduced connection timeout to 15s, down from 30s.
  * Fix: typo in iosxr/ciscoxr (@Bierchermuesli)
+ * Fix: Not having CVS no longer bails on initial setup.
+ * Chg: Required PHP version bumped from 5.4 to 7.2
+
 
 2.0 - Aug / Sep / Oct 2015
 
