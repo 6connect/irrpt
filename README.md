@@ -404,6 +404,7 @@ Change Log
  * Fix: reduced connection timeout to 15s, down from 30s.
  * Fix: typo in iosxr/ciscoxr (@Bierchermuesli)
  * Fix: Not having CVS no longer bails on initial setup.
+ * Fix: v6 addresses are all now in compressed format when processing.
  * Chg: Required PHP version bumped from 5.4 to 7.2
 
 
