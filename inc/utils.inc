@@ -81,4 +81,30 @@ function concat_files($src_file1, $src_file2, $dst_file) {
     fclose($dst_fp);
 }
 
+/* Wrapper for aggregating routes */
+function aggregate_routes($routefile)
+{
+
+  global $cfg;
+
+  /* normalize and sort addresses and store in array */
+  status(STATUS_NOTICE, "Aggregating routes - sorting...");
+  if (($addresses = file($routefile)) == FALSE)
+  {
+    status(STATUS_WARNING, "Unable to open route file (might be empty), skipping.");
+    return FALSE;
+  }
+
+  // First normalize the routes with a space, no array.
+  $addresses_normal = implode(" ", $addresses);
+
+  // Process the aggregation
+  $addresses_agg = aggregate($addresses_normal);
+
+  // Return them in an array
+  return explode(" ", $addresses_agg);
+
+}
+
+
 ?>
