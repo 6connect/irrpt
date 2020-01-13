@@ -37,7 +37,7 @@ Project Goals: IRR PowerTools 3.0
 
 * Rewrite networking code to handle recovery from a lost connection to the 
   WHOIS server. Unfortunately the RIPE protocol (above) from several 
-  serius issues, such as a lack of a command to recursively resolve AS-SET 
+  serious issues, such as a lack of a command to recursively resolve AS-SET 
   members on the server. This increases the number of transactions with the 
   WHOIS server, increasing the processing time significantly (especially 
   over high-latency paths between host and WHOIS server). A query against a
