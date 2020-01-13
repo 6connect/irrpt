@@ -397,7 +397,7 @@ Change Log
  * Fix: remove Cisco prefix-list associated with proper address family
  * Fix: prefix lengths not properly checked (juniper, iosxr, f10, extreme)
  * Fix: Force10 pfxgen syntax issue
- * Fix: Email notifications comparing full routue and full agg file (@gawul)
+ * Fix: Email notifications comparing full routes and full agg file (@gawul)
  * Fix: iosXR pfxgen generates blank entry for prefixes not matching length (@bonev)
  * Fix: PHP 7.2.0 behaviour change using count(), fixed errors under Juniper pfxgen
  * Fix: Mask php errors for connection timeout, report proper host timeout.
@@ -405,6 +405,7 @@ Change Log
  * Fix: typo in iosxr/ciscoxr (@Bierchermuesli)
  * Fix: Not having CVS no longer bails on initial setup.
  * Fix: v6 addresses are all now in compressed format when processing.
+ * Fix: Prefix aggregation enhanced to use Aggregator
  * Chg: Required PHP version bumped from 5.4 to 7.2
 
 
