@@ -1,6 +1,6 @@
 <?php
 /**
- * Aggregator v1.3.0 (last modified: 2020.01.11).
+ * Aggregator v1.3.1 (last modified: 2020.01.14).
  *
  * Description: A stand-alone class implementation of the IPv4+IPv6 IP+CIDR
  * aggregator from CIDRAM.
@@ -255,6 +255,9 @@ class Aggregator
         $InCount = count($In);
         if (isset($this->callbacks['newParse']) && is_callable($this->callbacks['newParse'])) {
             $this->callbacks['newParse']($InCount);
+        }
+        if (!empty($this->Results)) {
+            $this->NumberEntered = $InCount;
         }
         unset($InCount);
         $In = array_filter(array_unique(array_map(function ($Line) {
