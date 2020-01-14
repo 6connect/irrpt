@@ -96,7 +96,7 @@ function aggregate_routes($routefile)
   }
 
   // First normalize the routes with a space, no array.
-  $addresses_normal = implode(" ", $addresses);
+  $addresses_normal = implode("", $addresses);
 
   // Process the aggregation
   $addresses_agg = aggregate($addresses_normal);
