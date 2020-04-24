@@ -403,6 +403,7 @@ Change Log
  * Fix: Mask php errors for connection timeout, report proper host timeout.
  * Fix: reduced connection timeout to 15s, down from 30s.
  * Fix: typo in iosxr/ciscoxr (@Bierchermuesli)
+ * Fix: last line of JunOS generation did not have a carriage return (@rlhennig)
  * Fix: Not having CVS no longer bails on initial setup.
  * Fix: v6 addresses are all now in compressed format when processing.
  * Fix: Prefix aggregation enhanced to use Aggregator
