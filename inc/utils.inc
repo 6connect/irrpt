@@ -70,7 +70,7 @@ function concat_files($src_file1, $src_file2, $dst_file) {
     }
     else { status(STATUS_INFO, "Warning: Unable to read $src_file1."); }
 
-    if(fwrite($dst_fp, $content_file1) === FALSE) {
+    if(fwrite($dst_fp, "$content_file1\n") === FALSE) {
         status(STATUS_INFO, "Warning: File content $src_file1 not written to $dst_file.");
     }
 
