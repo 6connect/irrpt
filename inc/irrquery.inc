@@ -1,11 +1,11 @@
 <?php
 
 /*
- *  A simple class for doing raw IRRd queries. This was originally done with 
- *  IRRToolSet, but we were forced to whip this up after not being able to 
- *  find any network admin who could actually manage to successfully compile 
+ *  A simple class for doing raw IRRd queries. This was originally done with
+ *  IRRToolSet, but we were forced to whip this up after not being able to
+ *  find any network admin who could actually manage to successfully compile
  *  IRRToolSet out of the box. :)
- * 
+ *
  *  Also includes a few functions to make processing the class easier.
  *
  */
@@ -106,11 +106,30 @@ class IRRQuery {
   function _send($output)
   {
     $this->lastcommand = rtrim($output);
+	$count = 0;
+	// Attempt to send the command
+    $r = fwrite($this->fp, $output);
 
-    if (fwrite($this->fp, $output) == FALSE) {
-      status(STATUS_ERROR, "IRR Query - Unexpected write() error on socket.");
-      return FALSE;
+    while ($r == FALSE && $count < 3) {
+	  /*
+	  if the command fails, then let's clone the file handle,
+      wait a second, reconnect, and try again.
+
+	  we will try this 3 times.
+		*/
+      status(STATUS_ERROR, "IRR Query - Error on write. Re-connecting...");
+      // Make sure we don't leave dangling file pointers around
+      fclose($this->fp);
+      sleep(1);
+      $this->connect($this->host, $this->port);
+      $count += 1;
+      $r = fwrite($this->fp, $output);
     }
+
+    if ($r == FALSE) {
+      status(STATUS_ERROR, "IRR Query - Error on write. Re-connecting...");
+        return FALSE;
+   }
 
     return TRUE;
   }
@@ -131,6 +150,12 @@ class IRRQuery {
     $datalen = 0;
 
     $header = rtrim($this->_readline());
+
+    if( $header == FALSE )
+    {
+        status(STATUS_ERROR, "IRR Query - possible timeout, no data...");
+        return FALSE;
+    }
 
     switch ($header[0]) {
       case "C":
@@ -282,7 +307,7 @@ class IRRQuery {
 
     /* Prepend 'AS' to set if not provided */
 
-    if (preg_match("/^AS./i", $origin) == 0) 
+    if (preg_match("/^AS./i", $origin) == 0)
     {
       $origin = 'AS'.$origin;
     }
@@ -300,7 +325,7 @@ class IRRQuery {
       return FALSE;
     }
 
-    else 
+    else
     {
       $results = $this->_classful_fix(explode(" ", $results));
 
@@ -318,7 +343,7 @@ class IRRQuery {
 
     /* Prepend 'AS' to set if not provided */
 
-    if (preg_match("/^AS./i", $origin) == 0) 
+    if (preg_match("/^AS./i", $origin) == 0)
     {
       $origin = 'AS'.$origin;
     }
@@ -373,7 +398,7 @@ class IRRQuery {
     /* XXX - This should be caching results, maybe? */
 
     /* Prepend 'AS' to set if not provided */
-    if (preg_match("/^AS./i", $set) == 0) 
+    if (preg_match("/^AS./i", $set) == 0)
     {
       $set = 'AS'.$set;
     }
@@ -387,15 +412,15 @@ class IRRQuery {
     /* Detect route-set, otherwise assume as-set or autnum */
     if ((strchr($response, '.') != FALSE) && (stristr($response, "AS") == FALSE)) {
       $routes4 = $this->_classful_fix($autnumlist);
-    } 
-    else 
+    }
+    else
     {
-      for ($i = 0; $i < sizeof($autnumlist); $i++) 
+      for ($i = 0; $i < sizeof($autnumlist); $i++)
       {
         if($version == '4')
         {
           $results4 = $this->get_v4_routes_by_origin($autnumlist[$i]);
-          if ($results4 == FALSE) 
+          if ($results4 == FALSE)
           {
             $stats['missing_autnum']++;
             continue;
@@ -404,7 +429,7 @@ class IRRQuery {
         if($version == '6')
         {
           $results6 = $this->get_v6_routes_by_origin($autnumlist[$i]);
-          if ($results6 == FALSE) 
+          if ($results6 == FALSE)
           {
             $stats['missing_autnum_v6']++;
             continue;
@@ -432,7 +457,7 @@ class IRRQuery {
     $routes = array();
 
     /* Prepend 'AS' to set if not provided */
-    if (preg_match("/^AS./i", $set) == 0) 
+    if (preg_match("/^AS./i", $set) == 0)
     {
       $set = 'AS'.$set;
     }
