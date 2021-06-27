@@ -8,146 +8,146 @@ require("{$currentpath}/../inc/aggregate.inc");
 require("{$currentpath}/../inc/status.inc");
 require("{$currentpath}/../inc/ipv6.inc");
 
-$o_aggregate	= 0;	/* Default: do not aggregate prefixes */
-$o_verbose	= 0;	/* Default: verbose mode off */
-$o_4 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
-$o_6 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
+$o_aggregate  = 0; /* Default: do not aggregate prefixes */
+$o_verbose    = 0; /* Default: verbose mode off */
+$o_4          = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
+$o_6          = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
 
-$irr		= new IRRQuery;	/* Open our IRRQuery class */
-
+$irr          = new IRRQuery;    /* Open our IRRQuery class */
 
 
 /* Parse through the cmdline options. */
 for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
-	if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
-		break;
+    if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
+        break;
 
-	switch($_SERVER['argv'][$offset]) {
-	    case "-h":
-	    case "--help":
-		printf("Usage: %s [-h46va] <object>\n", $_SERVER['argv'][0]);
-		exit(1);
+    switch($_SERVER['argv'][$offset]) {
+        case "-h":
+        case "--help":
+            printf("Usage: %s [-h46va] <object>\n", $_SERVER['argv'][0]);
+            exit(1);
 
-	    case "-v":
-	    case "--verbose":
-		$o_verbose = 1;
-		break;
+        case "-v":
+        case "--verbose":
+            $o_verbose = 1;
+            break;
 
-	    case "-a":
-	    case "--aggregate":
-		$o_aggregate = 1;
-		break;
+        case "-a":
+        case "--aggregate":
+            $o_aggregate = 1;
+            break;
 
-	    case "-4":
-	    case "--4":
-		$o_4 = 1;
-		break;
+        case "-4":
+        case "--4":
+            $o_4 = 1;
+            break;
 
-	    case "-6":
-	    case "--6":
-		$o_6 = 1;
-		break;
-	}
+        case "-6":
+        case "--6":
+            $o_6 = 1;
+            break;
+    }
 }
 
 if (($_SERVER['argc'] - $offset) < 1) {
-	printf("Usage: %s [-h46va] <asn>\n", $_SERVER['argv'][0]);
-	exit(1);
+    printf("Usage: %s [-h46va] <asn>\n", $_SERVER['argv'][0]);
+    exit(1);
 }
 
 // check AS parameter if provided
 if (isset($_SERVER['argv'][$offset+0]))
 {
-  if (preg_match("/^AS./i", $_SERVER['argv'][$offset+0])) {
-    $object = strtoupper($_SERVER['argv'][$offset+0]);
-  }
-  elseif ( is_numeric($_SERVER['argv'][$offset+0]) && (int)$_SERVER['argv'][$offset+0] > 0 && (int)$_SERVER['argv'][$offset+0] <= 4294967295) {
-    $object = "AS" . $_SERVER['argv'][$offset+0];
-  }
-  else {
-    status(STATUS_ERROR, "Invalid AS or AS-SET input, aborting.");
-    exit(-1);
-  }
+    if (preg_match("/^AS./i", $_SERVER['argv'][$offset+0])) {
+        $object = strtoupper($_SERVER['argv'][$offset+0]);
+    }
+    elseif ( is_numeric($_SERVER['argv'][$offset+0]) && (int)$_SERVER['argv'][$offset+0] > 0 && (int)$_SERVER['argv'][$offset+0] <= 4294967295) {
+        $object = "AS" . $_SERVER['argv'][$offset+0];
+    }
+    else {
+        status(STATUS_ERROR, "Invalid AS or AS-SET input, aborting.");
+        exit(-1);
+    }
 }
 
 /* Establish a connection with our IRR Query whois server */
 if ($irr->connect($cfg['fetch']['host'], $cfg['fetch']['port']) == FALSE) {
-	status(STATUS_ERROR, "Unable to connect to IRR Query whois server, aborting.");
-	exit(-1);
+    status(STATUS_ERROR, "Unable to connect to IRR Query whois server, aborting.");
+    exit(-1);
 }
 
 /* Optionally enable a local cache of prefixes per aut-num record */
 if ($cfg['fetch']['cache']) {
-	$irr->cache_set(TRUE);
+    $irr->cache_set(TRUE);
 }
 
 /* If the user doesn't want to query all IRR sources, set the new sources now */
 if ($cfg['fetch']['sources'] != "all")
-	$irr->set_sources($cfg['fetch']['sources']);
+    $irr->set_sources($cfg['fetch']['sources']);
 
 /* Figure out if we have an AUT-NUM or an AS-SET, and resolve it */
 status(STATUS_NOTICE, "Querying IRR Object {$object}");
 
-$routes = array();
+$routes  = array();
 $routes4 = array();
 $routes6 = array();
 
-//fetch only v4
+// FETCH: only v4
 if( $o_4 == 1 && $o_6 == 0 )
 {
-  $resolve_v4_result = resolve_v4($irr, $object);
-  list($routes4, $asnlist4) = $resolve_v4_result;
+    $resolve_v4_result = resolve_v4($irr, $object);
+    list($routes4, $asnlist4) = $resolve_v4_result;
 }
-//fetch only v6
+// FETCH: only v6
 elseif( $o_6 == 1 && $o_4 == 0 )
 {
-  $resolve_v6_result = resolve_v6($irr, $object);
-  list($routes6, $asnlist6) = $resolve_v6_result;
+    $resolve_v6_result = resolve_v6($irr, $object);
+    list($routes6, $asnlist6) = $resolve_v6_result;
 }
-//fetch both
+// FETCH: both v4/v6
 else
 {
-  $resolve_v4_result = resolve_v4($irr, $object);
-  list($routes4, $asnlist4) = $resolve_v4_result;
-  $resolve_v6_result = resolve_v6($irr, $object);
-  list($routes6, $asnlist6) = $resolve_v6_result;
+    $resolve_v4_result = resolve_v4($irr, $object);
+    list($routes4, $asnlist4) = $resolve_v4_result;
+    $resolve_v6_result = resolve_v6($irr, $object);
+    list($routes6, $asnlist6) = $resolve_v6_result;
 }
 
-//check if either result set came back with nothing
-if(empty($routes4)) { $routes4 = array(); }
-if(empty($routes6)) { $routes6 = array(); }
+// CHECK: if either result set came back with nothing
+if (empty($routes4)) { $routes4 = array(); }
+if (empty($routes6)) { $routes6 = array(); }
 
 
 $routes = array_merge($routes4, $routes6);
 
 if (!$o_aggregate) {
-	for($i=0;$i<sizeof($routes);$i++)
-		printf("%s\n", $routes[$i]);
+    for($i=0;$i<sizeof($routes);$i++)
+        printf("%s\n", $routes[$i]);
 } else {
-	$tmpname = tempnam($cfg['paths']['tmp'], "IRRPT");
+    $tmpname = tempnam($cfg['paths']['tmp'], "IRRPT");
 
-	if (!($tmp = fopen($tmpname, "w"))) {
-		status(STATUS_ERROR, "Unable to open tmp file, aborting.");
-		exit(-1);
-	}
+    if (!($tmp = fopen($tmpname, "w"))) {
+        status(STATUS_ERROR, "Unable to open tmp file, aborting.");
+        exit(-1);
+    }
 
-	for($i=0;$i<sizeof($routes);$i++)
-		fwrite($tmp, sprintf("%s\n", $routes[$i]));
+    /* Write prefixes to file */
+    for($i=0;$i<sizeof($routes);$i++)
+        fwrite($tmp, sprintf("%s\n", $routes[$i]));
 
-	fclose($tmp);
+    fclose($tmp);
 
-  /* Aggregate the route file */
-  status(STATUS_NOTICE, "Aggregating routes.");
-  $aggregated_routes = aggregate_routes($tmpname);
+    /* Aggregate the route file */
+    status(STATUS_NOTICE, "Aggregating routes.");
+    $aggregated_routes = aggregate_routes($tmpname);
 
-  /* print result */
-  $count = count($aggregated_routes);
-  for ($i = 0; $i < $count; $i++)
-  {
-    print "$aggregated_routes[$i]";
-  }
+    /* print result */
+    $count = count($aggregated_routes);
+    for ($i = 0; $i < $count; $i++)
+    {
+        print "$aggregated_routes[$i]";
+    }
 
-	unlink($tmpname);
+    unlink($tmpname);
 }
 
 ?>

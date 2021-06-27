@@ -5,54 +5,53 @@ $currentpath = dirname(realpath(__FILE__));
 require("{$currentpath}/../conf/irrpt.conf");
 require("{$currentpath}/../inc/cvs.inc");
 
-$o_cfgfile	= $cfg['cfgfiles']['default_nag_cfg'];	/* Default config */
-$o_msgfile	= $cfg['cfgfiles']['default_nag_msg'];	/* Default message */
-$o_preview	= 0;					/* Preview mode off */
-$msg		= "";
+$o_cfgfile  = $cfg['cfgfiles']['default_nag_cfg'];    /* Default config */
+$o_msgfile  = $cfg['cfgfiles']['default_nag_msg'];    /* Default message */
+$o_preview  = 0;         /* Preview mode off */
+$msg        = "";
 
 $cvs = new CVS;
 $cvs->init($cfg['paths']['cvsroot']);
 
 function usage($progname)
 {
-	printf("Usage: %s [-hp] [-c config] [-m message] <previous rev> <current rev>\n\n",
-		$progname);
-	printf("Options:\n");
-	printf("   -p    Preview mode (for diagnostic use). Print results to screen instead of\n");
-	printf("         e-mail.\n");
-	exit(1);
+    printf("Usage: %s [-hp] [-c config] [-m message] <previous rev> <current rev>\n\n", $progname);
+    printf("Options:\n");
+    printf("   -p    Preview mode (for diagnostic use). Print results to screen instead of\n");
+    printf("         e-mail.\n");
+    exit(1);
 }
 
 /* Parse through the cmdline options. */
 for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
-	if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
-		break;
+    if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
+        break;
 
-	switch($_SERVER['argv'][$offset]) {
-	    case "-h":
-	    case "--help":
-		usage($_SERVER['argv'][0]);
+    switch($_SERVER['argv'][$offset]) {
+        case "-h":
+        case "--help":
+            usage($_SERVER['argv'][0]);
 
-	    case "-p":
-	    case "--preview":
-		$o_preview = 1;
-		break;
+        case "-p":
+        case "--preview":
+            $o_preview = 1;
+            break;
 
-	    case "-c":
-	    case "--config":
-		$o_cfgfile = $_SERVER['argv'][++$offset];
-		break;
+        case "-c":
+        case "--config":
+            $o_cfgfile = $_SERVER['argv'][++$offset];
+            break;
 
-	    case "-m":
-	    case "--msgfile":
-		$o_msgfile = $_SERVER['argv'][++$offset];
-		break;
-	}
+        case "-m":
+        case "--msgfile":
+            $o_msgfile = $_SERVER['argv'][++$offset];
+            break;
+    }
 }
 
 /* Check for minimum number of args after cmdline */
 if (($_SERVER['argc'] - $offset) < 2)
-	usage($_SERVER['argv'][0]);
+    usage($_SERVER['argv'][0]);
 
 
 $rev['old'] = $_SERVER['argv'][$offset+0];
@@ -61,20 +60,20 @@ $rev['new'] = $_SERVER['argv'][$offset+1];
 
 /* Import the selected configuration file */
 if (!file_exists($o_cfgfile) || !is_readable($o_cfgfile)) {
-	status(STATUS_ERROR, "Can not open selected configuration file, aborting.");
-	exit(1);
+    status(STATUS_ERROR, "Can not open selected configuration file, aborting.");
+    exit(1);
 }
 
 require($o_cfgfile);
 
 /* Open message file, read in data */
 if (!($msgfile = fopen($o_msgfile, "r"))) {
-	status(STATUS_ERROR, "Unable to open nag message file {$o_msgfile}, aborting.\n");
-	exit(1);
+    status(STATUS_ERROR, "Unable to open nag message file {$o_msgfile}, aborting.\n");
+    exit(1);
 }
 
 while (!feof($msgfile)) {
-	$msg .= fgets($msgfile, 256);
+    $msg .= fgets($msgfile, 256);
 }
 
 fclose($msgfile);
@@ -87,37 +86,37 @@ $headers .= "Date: " . date("r") . "\n";
 
 for($i=0;$i < sizeof($provider); $i++)
 {
-	$content = $msg;
+    $content = $msg;
 
-	$content .= "\n";
-	$content .= "Requesting Company.......................... {$local['company']}\n";
-	$content .= "Requesting Autonomous System Number (ASN)... {$local['asn']}\n";
-	$content .= "Customer Identifying Information............ {$provider[$i]['custid']}\n";
-	$content .= "Routine / Successful Completion Notices..... {$local['email_routine']}\n";
-	$content .= "Failures, Problems, Questions, Etc.......... {$local['email_failure']}\n";
+    $content .= "\n";
+    $content .= "Requesting Company.......................... {$local['company']}\n";
+    $content .= "Requesting Autonomous System Number (ASN)... {$local['asn']}\n";
+    $content .= "Customer Identifying Information............ {$provider[$i]['custid']}\n";
+    $content .= "Routine / Successful Completion Notices..... {$local['email_routine']}\n";
+    $content .= "Failures, Problems, Questions, Etc.......... {$local['email_failure']}\n";
 
-	if (isset($provider[$i]['notes']))
-		$content .= "Other Notes: {$provider[$i]['notes']}\n";
+    if (isset($provider[$i]['notes']))
+        $content .= "Other Notes: {$provider[$i]['notes']}\n";
 
-	$content .= "\n";
-	$content .= "Changes to the prefix list:\n\n";
-	$content .= $cvs->get_diff($asnfile, $rev);
-	$content .= "\n\n";
-	$content .= "Complete prefix list:\n";
-	$content .= $cvs->get_complete($asnfile);
+    $content .= "\n";
+    $content .= "Changes to the prefix list:\n\n";
+    $content .= $cvs->get_diff($asnfile, $rev);
+    $content .= "\n\n";
+    $content .= "Complete prefix list:\n";
+    $content .= $cvs->get_complete($asnfile);
 
-	if ($o_preview) {
-		printf("IRRPT Preview Mode:\n");
-		printf("E-mail Recepient: %s\n", $provider[$i]['email']);
-		printf("E-mail Headers:\n%s\n", $headers);
-		printf("E-mail Body:\n%s\n", $content);
-		printf("E-mail not sent.\n");
-	} else {
-		mail($provider[$i]['email'], $local['subject'], $content, $headers);
+    if ($o_preview) {
+        printf("IRRPT Preview Mode:\n");
+        printf("E-mail Recepient: %s\n", $provider[$i]['email']);
+        printf("E-mail Headers:\n%s\n", $headers);
+        printf("E-mail Body:\n%s\n", $content);
+        printf("E-mail not sent.\n");
+    } else {
+        mail($provider[$i]['email'], $local['subject'], $content, $headers);
 
-		if (isset($local['localcopy']))
-			mail($local['localcopy'], $local['subject'], $content, $headers);
-	}
+        if (isset($local['localcopy']))
+            mail($local['localcopy'], $local['subject'], $content, $headers);
+    }
 }
 
 ?>

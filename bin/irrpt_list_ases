@@ -9,125 +9,128 @@ require("{$currentpath}/../inc/status.inc");
 $o_4 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
 $o_6 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
 
-$irr		= new IRRQuery;	/* Open our IRRQuery class */
-$done		= array();
+$irr     = new IRRQuery;  /* Open our IRRQuery class */
+$done    = array();
 
 
 function explorer($object, $depth, $o_4, $o_6)
 {
-	global $irr;
-	global $done;
+    global $irr;
+    global $done;
 
 
-  // if this is an AS number, not an object
-  // see if it holds any 4/6 prefixes 
-  if (preg_match("/AS\d./", $object) && $depth > 0)
-  {
-
-    // the v4 switch is enabled, only pring ASes in the set with registered v4 prefixes 
-    if( $o_4 == 1 && $o_6 == 0 )
+    // if this is an AS number, not an object
+    // see if it holds any 4/6 prefixes 
+    if (preg_match("/AS\d./", $object) && $depth > 0)
     {
-      $resolve_v4_result = resolve_v4($irr, $object);
-      list($routes4, $asnlist4) = $resolve_v4_result;
-      if (sizeof($routes4) > 1 )
-      {
-	      printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
-      }
-    }
+
+        // the v4 switch is enabled, only pring ASes in the set with registered v4 prefixes 
+        if( $o_4 == 1 && $o_6 == 0 )
+        {
+            $resolve_v4_result = resolve_v4($irr, $object);
+            list($routes4, $asnlist4) = $resolve_v4_result;
+            if (sizeof($routes4) > 1 )
+            {
+                printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
+            }
+        }
 
     // the v6 switch is enabled, only pring ASes in the set with registered v6 prefixes 
     elseif( $o_6 == 1 && $o_4 == 0 )
     {
-      $resolve_v6_result = resolve_v6($irr, $object);
-      list($routes6, $asnlist6) = $resolve_v6_result;
-      if (sizeof($routes6) > 1 )
-      {
-	      printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
-      }
+        $resolve_v6_result = resolve_v6($irr, $object);
+        list($routes6, $asnlist6) = $resolve_v6_result;
+        if (sizeof($routes6) > 1 )
+        {
+            printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
+        }
     }
 
     // if no switch is enabled, print the entire set 
     // unless it's the initial set, or we would print it double 
     else {
-	      printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
+          printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
     }
-  }
+}
 
-  // expand object 
-	if (preg_match("/AS-./", $object)) {
-	  printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
-		if (!isset($done[strval($object)])) {
-			$done[strval($object)] = true;
+// expand object 
+if (preg_match("/AS-./", $object)) {
+    printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
 
-			if (!($members = $irr->get_members_by_set($object, FALSE))) {
-				printf(" (error)\n");
-				return FALSE;
-			}
+    if (!isset($done[strval($object)])) {
+        $done[strval($object)] = true;
 
-			printf("\n%s%s\n", str_repeat("  ", $depth), "{");
+        if (!($members = $irr->get_members_by_set($object, FALSE))) {
+            printf(" (error)\n");
+            return FALSE;
+        }
 
-			for($i=0;$i<sizeof($members);$i++)
-				explorer($members[$i], $depth+1, $o_4, $o_6);
+        printf("\n%s%s\n", str_repeat("  ", $depth), "{");
 
-			printf("%s%s\n", str_repeat("  ", $depth), "}");
-		} else
-			printf(" (dup)\n");
-	} else {
-		return TRUE;
-	}
+        for($i=0;$i<sizeof($members);$i++)
+            explorer($members[$i], $depth+1, $o_4, $o_6);
 
-	return FALSE;
+            printf("%s%s\n", str_repeat("  ", $depth), "}");
+        }
+        else {
+            printf(" (dup)\n");
+        }
+    } else {
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 
 /* Parse through the cmdline options. */
 for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
-	if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
-		break;
+    if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
+        break;
 
-	switch($_SERVER['argv'][$offset]) {
-	    case "-h":
-	    case "--help":
-		printf("Usage: %s [-h46] <object>\n", $_SERVER['argv'][0]);
-		exit(1);
+    switch($_SERVER['argv'][$offset]) {
+        case "-h":
+        case "--help":
+            printf("Usage: %s [-h46] <object>\n", $_SERVER['argv'][0]);
+          exit(1);
 
-      case "-4":
-      case "--4":
-    $o_4 = 1;
-    break;
+        case "-4":
+        case "--4":
+            $o_4 = 1;
+            break;
 
-      case "-6":
-      case "--6":
-    $o_6 = 1;
-    break;
-	}
+        case "-6":
+        case "--6":
+            $o_6 = 1;
+            break;
+    }
 }
 
 if (($_SERVER['argc'] - $offset) < 1) {
-	printf("Usage: %s [-h46] <object>\n", $_SERVER['argv'][0]);
-	exit(1);
+    printf("Usage: %s [-h46] <object>\n", $_SERVER['argv'][0]);
+    exit(1);
 }
 
 if (preg_match("/^AS./i", $_SERVER['argv'][$offset+0])) {
   $object = strtoupper($_SERVER['argv'][$offset+0]);
 }
 elseif ( (int)$_SERVER['argv'][$offset+0] > 0 && (int) $_SERVER['argv'][$offset+0] <= 4294967295) {
-  $object = "AS" . $_SERVER['argv'][$offset+0];
+   $object = "AS" . $_SERVER['argv'][$offset+0];
 }
 else {
-  status(STATUS_ERROR, "Invalid AS or AS-SET input, aborting.");
-  exit(-1);
+   status(STATUS_ERROR, "Invalid AS or AS-SET input, aborting.");
+    exit(-1);
 }
 
 /* Establish a connection with our IRR Query whois server */
 if ($irr->connect($cfg['fetch']['host'], $cfg['fetch']['port']) == FALSE) {
-	status(STATUS_ERROR, "Unable to connect to IRR Query whois server, aborting.");
-	exit(-1);
+    status(STATUS_ERROR, "Unable to connect to IRR Query whois server, aborting.");
+    exit(-1);
 }
 
 /* If the user doesn't want to query all IRR sources, set the new sources now */
 if ($cfg['fetch']['sources'] != "all")
-	$irr->set_sources($cfg['fetch']['sources']);
+    $irr->set_sources($cfg['fetch']['sources']);
 
 explorer($object, 0, $o_4, $o_6);
 
