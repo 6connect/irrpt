@@ -384,7 +384,7 @@ A special thanks to Jon Nistor for many many rounds of QA for version 2.0.
 Change Log
 -------
  
-2.1 - Jan 2020 (release pending)
+2.1 - Jun 2021 (release pending)
 
  * Add: pfxgen added support for iosXR
  * Add: pfxgen added support for Ubiquity EdgeOS (@mikenowak)
@@ -406,6 +406,7 @@ Change Log
  * Fix: last line of JunOS generation did not have a carriage return (@rlhennig)
  * Fix: Not having CVS no longer bails on initial setup.
  * Fix: v6 addresses are all now in compressed format when processing.
+ * Fix: TCP reconnect back to whois server if connection drops (@tallwireless)
  * Chg: Required PHP version bumped from 5.4 to 7.2
 
 
