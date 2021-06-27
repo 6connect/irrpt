@@ -269,6 +269,25 @@ status data, not deploying configurations.
 
 Many other systems exist as well.
 
+### irrpt_objgrpgen
+
+    $ bin/irrpt_objgrpgen -h
+    Usage: bin/irrpt_objgrpgen [-h46] [-p pfxstr] [-p6 pfxstr_v6] [-f format] <asn>
+      pfxstr       - The prefix-list name format string (default: CUSTOMER:%d)
+      pfxstr_v6    - The prefix-list name format string (default: CUSTOMERv6:%d)
+      format       - The output format for a specific router type (default: cisco)
+                     Currently supported values are:
+		     ciscoxr
+
+Examples:
+
+    $ bin/irrpt_objgrpgen -f ciscoxr 42
+    ...
+
+Similar to the "pfxgen" tool, this generates router configuration for security
+object groups which are suitable for inclusion in an anti-spoofing access
+control list.  Currently only Cisco XR is supported.
+
 ### irrpt_list_prefixes
 
 Show prefixes for a given AS or AS-SET, in unaggregated or aggregated form.

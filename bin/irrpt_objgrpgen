@@ -1,0 +1,97 @@
+#!/usr/bin/env php
+<?php
+
+$currentpath = dirname(realpath(__FILE__));
+require("{$currentpath}/../conf/irrpt.conf");
+require("{$currentpath}/../inc/objgrp.inc");
+require("{$currentpath}/../inc/ipv6.inc");
+require("{$currentpath}/../inc/status.inc");
+require("{$currentpath}/../inc/utils.inc");
+
+/* Load our defaults from the master config file */
+$o_grpstr	    = $cfg['objgrpgen']['default_grpstr'];
+$o_grpstr_v6        = $cfg['objgrpgen']['default_grpstr_v6'];
+$o_format	    = $cfg['objgrpgen']['default_format'];
+
+$o_4 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
+$o_6 = 0; /* Default to fetch both v4 and v6 by setting this to 0 */
+
+
+function usage($progname)
+{
+	global $o_grpstr;
+	global $o_grpstr_v6;
+	global $o_format;
+
+	printf("Usage: %s [-h46] [-p grpstr] [-p6 grpstr_v6] [-f format] <asn>\n",
+		$progname);
+	printf("  grpstr       - The object-group name format string (default: %s)\n", $o_grpstr);
+	printf("  grpstr_v6    - The object-group name format string (default: %s)\n", $o_grpstr_v6);
+	printf("  format       - The output format for a specific router type (default: %s)\n", $o_format);
+	printf("                 Currently supported values are:\n");
+        printf("                 ciscoxr\n");
+	exit(1);
+}
+
+
+/* Parse through the cmdline options. */
+for ($offset = 1; $offset < $_SERVER['argc']; $offset++) {
+	if (substr($_SERVER['argv'][$offset], 0, 1) != "-")
+		break;
+
+	switch($_SERVER['argv'][$offset]) {
+	    case "-h":
+	    case "--help":
+		usage($_SERVER['argv'][0]);
+
+	    case "-p":
+	    case "--grpstr":
+                $o_grpstr = $_SERVER['argv'][++$offset];
+		break;
+
+	    case "-p6":
+	    case "--grpstr_v6":
+                $o_grpstr_v6 = $_SERVER['argv'][++$offset];
+		break;
+
+      case "-4":
+      case "--4":
+    $o_4 = 1;
+    break;
+
+      case "-6":
+      case "--6":
+    $o_6 = 1;
+    break;
+
+	    case "-f":
+	    case "--format":
+                switch (strtolower($_SERVER['argv'][++$offset])) {
+		    case "ciscoxr":
+		    case "iosxr":
+			$o_format = "iosxr";
+			break;
+
+		    default:
+			printf("Unknown format, aborting.\n");
+			exit(1);
+		}
+
+		break;
+
+	}
+}
+
+/* Check for minimum number of args after cmdline */
+if (($_SERVER['argc'] - $offset) < 1)
+	usage($_SERVER['argv'][0]);
+
+$asn = $_SERVER['argv'][$offset+0];
+
+
+if (objgrp_generate($o_format, $asn, $o_grpstr, $o_grpstr_v6, $o_4, $o_6) < 0) {
+	printf("Error generating prefix-list, aborting.\n");
+	exit(1);
+}
+
+?>
