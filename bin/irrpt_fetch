@@ -198,24 +198,24 @@ function process_as($asString, $asNumber, $count, $object, $irr, $email, $o_quie
   global $cvs;
   global $cfg;
 
-	if( $o_quiet == 0 )
-		status(STATUS_INFO, "Processing {$asString} [$object] (Record {$count})");
+  if( $o_quiet == 0 )
+	status(STATUS_INFO, "Processing {$asString} [$object] (Record {$count})");
 
-	/* Figure out if we have an AUT-NUM or an AS-SET, and resolve it */
-	status(STATUS_NOTICE, "Querying IRR Object {$object}");
+  /* Figure out if we have an AUT-NUM or an AS-SET, and resolve it */
+  status(STATUS_NOTICE, "Querying IRR Object {$object}");
 
-	/* init files and ensure files are writeable by the effective user id*/
-	$routefile4 = $cfg['paths']['db'] . $asNumber . ".4";
-	check_file_perms($routefile4);
+  /* init files and ensure files are writeable by the effective user id*/
+  $routefile4 = $cfg['paths']['db'] . $asNumber . ".4";
+  check_file_perms($routefile4);
 
-	$aggfile4 = $routefile4 . $cfg['aggregate']['suffix'];
-	check_file_perms($aggfile4);
+  $aggfile4 = $routefile4 . $cfg['aggregate']['suffix'];
+  check_file_perms($aggfile4);
 
-	$routefile6 = $cfg['paths']['db'] . $asNumber . ".6";
-	check_file_perms($routefile6);
+  $routefile6 = $cfg['paths']['db'] . $asNumber . ".6";
+  check_file_perms($routefile6);
 
-	$aggfile6 = $routefile6 . $cfg['aggregate']['suffix'];
-	check_file_perms($aggfile6);
+  $aggfile6 = $routefile6 . $cfg['aggregate']['suffix'];
+  check_file_perms($aggfile6);
 
   /* call v4 / v6 processing and aggregation */
   $asnlist4 = array();
