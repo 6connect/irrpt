@@ -10,7 +10,6 @@ require("{$currentpath}/../inc/cvs.inc");
 require("{$currentpath}/../inc/status.inc");
 require("{$currentpath}/../inc/ipv6.inc");
 require("{$currentpath}/../inc/utils.inc");
-require("{$currentpath}/../inc/helpers.inc");
 
 
 $o_asn		= 0;			/* Default ASN to fetch: all */
