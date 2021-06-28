@@ -30,7 +30,7 @@ function explorer($object, $depth, $o_4, $o_6)
             $resolve_v4_result = resolve_v4($irr, $object);
             list($routes4, $asnlist4) = $resolve_v4_result;
 
-            if (empty($routes4) == FALSE && sizeof($routes4) > 1 )
+            if (empty($routes4) == FALSE && sizeof($routes4) >= 1 )
             {
                 printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
             }
@@ -41,7 +41,8 @@ function explorer($object, $depth, $o_4, $o_6)
         {
             $resolve_v6_result = resolve_v6($irr, $object);
             list($routes6, $asnlist6) = $resolve_v6_result;
-            if (empty($routes6) == FALSE && sizeof($routes6) > 1 )
+
+            if (empty($routes6) == FALSE && sizeof($routes6) >= 1 )
             {
                 printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
             }
@@ -55,6 +56,7 @@ function explorer($object, $depth, $o_4, $o_6)
     }
 
     // expand object 
+    //print "OBJECT: $object\n";
     if (preg_match("/AS-./", $object)) {
         printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
 
