@@ -29,46 +29,48 @@ function explorer($object, $depth, $o_4, $o_6)
         {
             $resolve_v4_result = resolve_v4($irr, $object);
             list($routes4, $asnlist4) = $resolve_v4_result;
-            if (sizeof($routes4) > 1 )
+
+            if (empty($routes4) == FALSE && sizeof($routes4) > 1 )
             {
                 printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
             }
         }
 
-    // the v6 switch is enabled, only pring ASes in the set with registered v6 prefixes 
-    elseif( $o_6 == 1 && $o_4 == 0 )
-    {
-        $resolve_v6_result = resolve_v6($irr, $object);
-        list($routes6, $asnlist6) = $resolve_v6_result;
-        if (sizeof($routes6) > 1 )
+        // the v6 switch is enabled, only pring ASes in the set with registered v6 prefixes 
+        elseif( $o_6 == 1 && $o_4 == 0 )
         {
+            $resolve_v6_result = resolve_v6($irr, $object);
+            list($routes6, $asnlist6) = $resolve_v6_result;
+            if (empty($routes6) == FALSE && sizeof($routes6) > 1 )
+            {
+                printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
+            }
+        }
+
+        // if no switch is enabled, print the entire set 
+        // unless it's the initial set, or we would print it double 
+        else {
             printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
         }
     }
 
-    // if no switch is enabled, print the entire set 
-    // unless it's the initial set, or we would print it double 
-    else {
-          printf("%s%s\n", str_repeat("  ", $depth), strtoupper($object));
-    }
-}
+    // expand object 
+    if (preg_match("/AS-./", $object)) {
+        printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
 
-// expand object 
-if (preg_match("/AS-./", $object)) {
-    printf("%s%s", str_repeat("  ", $depth), strtoupper($object));
+        if (!isset($done[strval($object)])) {
+            $done[strval($object)] = true;
 
-    if (!isset($done[strval($object)])) {
-        $done[strval($object)] = true;
+            if (!($members = $irr->get_members_by_set($object, FALSE))) {
+                printf(" (error)\n");
+                return FALSE;
+            }
 
-        if (!($members = $irr->get_members_by_set($object, FALSE))) {
-            printf(" (error)\n");
-            return FALSE;
-        }
+            printf("\n%s%s\n", str_repeat("  ", $depth), "{");
 
-        printf("\n%s%s\n", str_repeat("  ", $depth), "{");
-
-        for($i=0;$i<sizeof($members);$i++)
-            explorer($members[$i], $depth+1, $o_4, $o_6);
+            for($i=0;$i<sizeof($members);$i++) {
+                explorer($members[$i], $depth+1, $o_4, $o_6);
+            }
 
             printf("%s%s\n", str_repeat("  ", $depth), "}");
         }
