@@ -466,7 +466,7 @@ if( isset($_SERVER['argv'][$offset+0]) )
       $asNumber = preg_replace("/[aA][sS]/", "", $asString);
 
       status(STATUS_DEBUG, "\$asNumber = $asNumber");
-      if ( !is_numeric($asNumber) )
+      if ( is_numeric($asNumber) == FALSE )
       {
           $asNumber = $asString;
       }
