@@ -236,17 +236,16 @@ formats are supported, but it should be trivial to add new ones:
 4. Force10 format
 5. EdgeOS format (Vyos/Vyatta should also work)
 6. Huawei format
+7. Openbgpd format
+8. CiscoXR / iosxr format
 
 These configs can then be deployed automatically using a variety of 
 existing tools. Some of these tools include:
 
 * JUNOScript         - http://www.juniper.net/support/junoscript/
+* JunOS PyEZ         - https://www.juniper.net/documentation/en_US/day-one-books/topics/topic-map/how-to-automatically-update-prefix-lists.html
 * Net::Telnet::Cisco - http://NetTelnetCisco.sourceforge.net/
-* RANCID             - http://www.shrubbery.net/rancid/
-
-A few tidbits of examples are included in the "/example" directory.
-There are of course a wide variety of ways to deploy configurations 
-on routers, and most of them are outside the scope of this project.
+* Oxidized           - https://github.com/ytti/oxidized-script
 
 Networks may find it appropriate to have an external database in place 
 which tracks customer BGP session data, so that you can search by a 
@@ -256,16 +255,12 @@ project.
 
 Juniper includes an example config pushing script in the JUNOSCript 
 package which works well, despite being a little complicated and having 
-something like 68 Perl dependancies. 
+something like 68 Perl dependancies.
 
 Cisco can be configured a number of ways, including various perl 
 modules, expect scripts. Due to issues like CLI interactivity delays, 
 many users find that simply copying config updates via tftp is an easy 
 way to manage changes.
-
-The RANCID package includes a few expect scripts for logging in to 
-routers to make changes, though they are primarily designed for reading 
-status data, not deploying configurations.
 
 Many other systems exist as well.
 
@@ -408,6 +403,7 @@ Change Log
  * Fix: v6 addresses are all now in compressed format when processing.
  * Fix: TCP reconnect back to whois server if connection drops (@tallwireless)
  * Fix: irrpt_list_ases did not include ASNs which had a single prefix
+ * Fix: readme cleanup
  * Chg: Required PHP version bumped from 5.4 to 7.2
 
 
