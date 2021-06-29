@@ -1,6 +1,6 @@
 # GIT ignore certain files
 #
-
+/conf/exclusions.conf
 /conf/irr??.conf
 
 /db/*
