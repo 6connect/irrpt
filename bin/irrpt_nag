@@ -68,7 +68,7 @@ if (file_exists($o_cfgfile) === FALSE || is_readable($o_cfgfile) === FALSE) {
 require($o_cfgfile);
 
 /* Open message file, read in data */
-if (!($msgfile = fopen($o_msgfile, "r"))) {
+if (($msgfile = @fopen($o_msgfile, "r")) === FALSE) {
     status(STATUS_ERROR, "Unable to open nag message file {$o_msgfile}, aborting.\n");
     exit(1);
 }
