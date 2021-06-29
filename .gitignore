@@ -1,5 +1,9 @@
 # GIT ignore certain files
 #
 
-conf/irrdb.conf
-conf/irrpt.conf
+/conf/irrdb.conf
+/conf/irrpt.conf
+
+/db/*
+
+.DS_Store
