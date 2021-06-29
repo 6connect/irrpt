@@ -4,6 +4,7 @@
 $currentpath = dirname(realpath(__FILE__));
 require("{$currentpath}/../conf/irrpt.conf");
 require("{$currentpath}/../inc/cvs.inc");
+require("{$currentpath}/../inc/status.inc");
 
 $o_cfgfile  = $cfg['cfgfiles']['default_nag_cfg'];    /* Default config */
 $o_msgfile  = $cfg['cfgfiles']['default_nag_msg'];    /* Default message */
@@ -59,7 +60,7 @@ $rev['new'] = $_SERVER['argv'][$offset+1];
 
 
 /* Import the selected configuration file */
-if (!file_exists($o_cfgfile) || !is_readable($o_cfgfile)) {
+if (file_exists($o_cfgfile) === FALSE || is_readable($o_cfgfile) === FALSE) {
     status(STATUS_ERROR, "Can not open selected configuration file, aborting.");
     exit(1);
 }
@@ -107,10 +108,10 @@ for($i=0;$i < sizeof($provider); $i++)
 
     if ($o_preview) {
         printf("IRRPT Preview Mode:\n");
-        printf("E-mail Recepient: %s\n", $provider[$i]['email']);
-        printf("E-mail Headers:\n%s\n", $headers);
-        printf("E-mail Body:\n%s\n", $content);
-        printf("E-mail not sent.\n");
+        printf("  E-mail Recepient: %s\n", $provider[$i]['email']);
+        printf("  E-mail Headers:\n%s\n", $headers);
+        printf("  E-mail Body:\n%s\n", $content);
+        printf("  E-mail not sent.\n");
     } else {
         mail($provider[$i]['email'], $local['subject'], $content, $headers);
 
