@@ -2,6 +2,7 @@
 #
 /conf/exclusions.conf
 /conf/irr??.conf
+/conf/nag.conf
 
 /db/*
 
