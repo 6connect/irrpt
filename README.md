@@ -404,6 +404,7 @@ Change Log
  * Fix: TCP reconnect back to whois server if connection drops (@tallwireless)
  * Fix: irrpt_list_ases did not include ASNs which had a single prefix
  * Fix: readme cleanup
+ * Fix: Removed extra carriage return in concatenated files
  * Chg: Required PHP version bumped from 5.4 to 7.2
 
 

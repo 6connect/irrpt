@@ -53,9 +53,10 @@ function check_file_perms($file_name) {
 
 /* concatenates srcFile1 and srcFile2 to dstFile */
 function concat_files($src_file1, $src_file2, $dst_file) {
+    status(STATUS_DEBUG, "Concatinating files $src_file1 + $src_file2 = $dst_file");
     $content_file1 = $content_file2 = null;
 
-    if (!$dst_fp = fopen("$dst_file", 'w+')) {
+    if (!$dst_fp = @fopen("$dst_file", 'w+')) {
         status(STATUS_ERROR, "Error: Unable to open $dst_file for writing, aborting.");
         return(FALSE);
     }
@@ -74,11 +75,11 @@ function concat_files($src_file1, $src_file2, $dst_file) {
         status(STATUS_INFO, "Warning: Unable to read $src_file1.");
     }
 
-    if (fwrite($dst_fp, "$content_file1\n") === FALSE) {
+    if (@fwrite($dst_fp, $content_file1) === FALSE) {
         status(STATUS_INFO, "Warning: File content $src_file1 not written to $dst_file.");
     }
 
-    if (fwrite($dst_fp, $content_file2) === FALSE) {
+    if (@fwrite($dst_fp, $content_file2) === FALSE) {
         status(STATUS_INFO, "Warning: File content $src_file2 not written to $dst_file.");
     }
 
