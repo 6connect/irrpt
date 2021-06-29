@@ -100,7 +100,7 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
     /* Write the routes we've just looked up into a file */
     status(STATUS_NOTICE, "Writing routes to local database.");
 
-    if (($output4 = fopen($routefile4, "w")) == FALSE) 
+    if (($output4 = @fopen($routefile4, "w")) == FALSE) 
     {
         status(STATUS_WARNING, "Can not open IRRDB output file for {$asString}, skipping this record. (check perms?)");
     }
@@ -120,7 +120,7 @@ function process_v4($irr, $object, $routefile4, $aggfile4)
     $aggregated_routes4 = aggregate_routes($routefile4);
 
     /* print result to a file */
-    if (($afile4 = fopen($aggfile4, "w")) == FALSE)
+    if (($afile4 = @fopen($aggfile4, "w")) == FALSE)
     {
         status(STATUS_WARNING, "Can not open agg route file, skipping this record.");
     }
@@ -159,7 +159,7 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
     status(STATUS_NOTICE, "Writing routes to local database.");
 
     /* Write routes to file */
-    if ( ($output6 = fopen($routefile6, "w")) == FALSE ) 
+    if ( ($output6 = @fopen($routefile6, "w")) == FALSE ) 
     {
         status(STATUS_WARNING, "Can not open IRRDB output file for {$asString}, skipping this record.");
     }
@@ -179,7 +179,7 @@ function process_v6($irr, $object, $routefile6, $aggfile6)
     $aggregated_routes6 = aggregate_routes($routefile6);
 
     /* print result to a file */
-    if (($afile6 = fopen($aggfile6, "w")) == FALSE)
+    if (($afile6 = @fopen($aggfile6, "w")) == FALSE)
     {
         status(STATUS_WARNING, "Can not open agg route file, skipping this record. (Check perms?)");
     }
@@ -256,7 +256,7 @@ function process_as($asString, $asNumber, $count, $object, $irr, $email, $o_quie
     $asnlist = array_merge($asnlist4, $asnlist6);
     $asnfile = $routefile . $cfg['fetch']['asn_suffix'];
     status(STATUS_NOTICE, "Writing ASN list to local database.");
-    if (($output = fopen($asnfile, "w")) == FALSE) 
+    if (($output = @fopen($asnfile, "w")) == FALSE) 
     {
         status(STATUS_WARNING, "Can not open ASN list output file for {$asString}, skipping this record.");
     }
@@ -309,7 +309,7 @@ function load_irrdb($o_quiet, $o_irrdbfile)
     $count    = 0;
 
     // Load the IRRDB file and store entries into a hash
-    if (!($irrdb = fopen($cfg['cfgfiles']['irrdb_list'], "r"))) 
+    if (!($irrdb = @fopen($cfg['cfgfiles']['irrdb_list'], "r"))) 
     {
         status(STATUS_ERROR, "Unable to open irrdb config file, aborting.");
         exit(-1);
