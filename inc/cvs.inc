@@ -64,7 +64,7 @@ class CVS {
     {
         $results = "";
 
-        if (!($routes = fopen($file, "r")))
+        if (!($routes = @fopen($file, "r")))
             return FALSE;
 
         while (!feof($routes)) {
