@@ -1,8 +1,7 @@
 # GIT ignore certain files
 #
 
-/conf/irrdb.conf
-/conf/irrpt.conf
+/conf/irr??.conf
 
 /db/*
 

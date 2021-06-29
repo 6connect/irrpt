@@ -46,7 +46,8 @@ $cvs_path = exec("which cvs");
 
 if (preg_match('/cvs/i', $cvs_path)) {
     printf($cvs_path . "\n");
-    $cvs_notsupported = "FALSE";
+    log_setup("CVS commit support disabled by default now\n");
+    $cvs_notsupported = "TRUE"; // Default TRUE
 } else {
     log_setup("No CVS detected, disabling CVS support\n");
     $cvs_notsupported = "TRUE";
@@ -107,14 +108,22 @@ else {
 log_setup("Checking installed path ...");
 printf($i_path . "\n");
 
-$fh = @fopen("$i_path/conf/irrpt.conf", "r");
+$fh = FALSE;
+if( is_readable("$i_path/conf/irrpt.conf") === TRUE )
+{
+    $fh = @fopen("$i_path/conf/irrpt.conf", "r");
+} elseif ( is_readable("$i_path/conf/irrpt.conf.dist") === TRUE ) {
+    $fh = @fopen("$i_path/conf/irrpt.conf.dist", "r");
+}
+
+
 if ( $fh )
 {
     while( ($line = fgets($fh)) !== false ) {
         if ( preg_match('/^\$cfg\[\'paths\'\]\[\'base\'\]/', $line) )
         {
             printf("  -> installed path changed.\n");
-            $line = '$cfg[\'paths\'][\'base\']           ' . "= \"$i_path/\";\n";
+            $line = '$cfg[\'paths\'][\'base\']          ' . "= \"$i_path/\";\n";
         }
 
         if ( preg_match('/^\$cfg\[\'tools\'\]\[\'cvs\'\]/', $line) )

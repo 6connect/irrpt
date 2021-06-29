@@ -1,0 +1,18 @@
+#
+# CONF: irrdb.conf.dist
+# 
+# NOTE: Formatting of this file can use spaces or tabs.
+#       If update eamil is set to "none" or is blank, no email will be sent.
+#       cvs must be tracking for email to work and send diffs
+#
+#       ex: irrpt_fetch <asn> - will pull the IRR object associated in this file
+#
+#
+#
+# Example:
+# ASN           IRR Object (AS-SET/AUT-NUM)           Update Email
+
+42              AS-PCH                                noc@example-customer-a.com
+6939            AS-HURRICANE                          none
+11670           AS-TORIX                              peering@peering-ixp.com
+393424          AS393424                              upstream-notify@example-customer-b.com
