@@ -407,6 +407,7 @@ Change Log
  * Fix: Not having CVS no longer bails on initial setup.
  * Fix: v6 addresses are all now in compressed format when processing.
  * Fix: TCP reconnect back to whois server if connection drops (@tallwireless)
+ * Fix: irrpt_list_ases did not include ASNs which had a single prefix
  * Chg: Required PHP version bumped from 5.4 to 7.2
 
 
