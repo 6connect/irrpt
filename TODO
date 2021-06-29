@@ -35,16 +35,6 @@ Project Goals: IRR PowerTools 3.0
   include the whois server to query, bogon filters, e-mail settings, 
   etc.
 
-* Rewrite networking code to handle recovery from a lost connection to the 
-  WHOIS server. Unfortunately the RIPE protocol (above) from several 
-  serious issues, such as a lack of a command to recursively resolve AS-SET 
-  members on the server. This increases the number of transactions with the 
-  WHOIS server, increasing the processing time significantly (especially 
-  over high-latency paths between host and WHOIS server). A query against a
-  large AS-SET from the US via whois.ripe.net can take several minutes, 
-  unfortunately the RIPE whoisd has a default timeout of 3 minutes, and 
-  does not do so gracefully (the socket is closed mid-transaction).
-
 * Add support for parallel WHOIS queries to improve transaction speed.
 
 * Add checks to spot common PHP configuration issues which are not 
