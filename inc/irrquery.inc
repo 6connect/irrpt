@@ -106,7 +106,7 @@ class IRRQuery {
         $this->lastcommand = rtrim($output);
         $count = 0;
         // Attempt to send the command
-        $r = fwrite($this->fp, $output);
+        $r = @fwrite($this->fp, $output);
 
         while ($r == FALSE && $count < 3) {
             /*
@@ -121,11 +121,11 @@ class IRRQuery {
             sleep(1);
             $this->connect($this->host, $this->port);
             $count += 1;
-            $r = fwrite($this->fp, $output);
+            $r = @fwrite($this->fp, $output);
         }
 
-        if ($r == FALSE) {
-            status(STATUS_ERROR, "IRR Query - Error on write. Re-connecting...");
+        if ($r === FALSE) {
+            status(STATUS_ERROR, "IRR Query - Error on write. Re-connect issue...");
             return FALSE;
         }
 

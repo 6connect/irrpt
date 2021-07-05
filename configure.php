@@ -57,7 +57,7 @@ if (preg_match('/cvs/i', $cvs_path)) {
 // ------------------------------------------------------------
 // Check the CVS directory
 log_setup("Checking CVS directory...");
-if ( !file_exists("$i_path/db") ) {
+if ( file_exists("$i_path/db") === FALSE ) {
     printf("WARNING: Path to cvs files is missing.\n");  
     printf("Restore the CVS directory to it's default location of $i_path/db?\n");
 
@@ -73,7 +73,7 @@ if ( !file_exists("$i_path/db") ) {
             $restore_res = exec("cvs -d $i_path/db/ init");
             echo (!empty($restore_res)) ? "CVS init...$restore_res" : NULL;    
 
-            if (!mkdir("$i_path/db/CVS")) {
+            if (mkdir("$i_path/db/CVS") === FALSE) {
                 printf("ERROR: CVS restore aborted, could not create $i_path/db/CVS.\n\n");
                 exit(1);
 
