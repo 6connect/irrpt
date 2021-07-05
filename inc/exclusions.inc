@@ -14,7 +14,7 @@ function exclusions_filter($file, $routes)
 
     if (!$exclusions) {
         /* Open the file with the list of excluded routes */
-        if (!($excfg = fopen($file, "r"))) {
+        if (!($excfg = @fopen($file, "r"))) {
             status(STATUS_ERROR, "Unable to open the exclusions config file, aborting.");
           exit(-1);
         }
