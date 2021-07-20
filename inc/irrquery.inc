@@ -104,25 +104,8 @@ class IRRQuery {
     function _send($output)
     {
         $this->lastcommand = rtrim($output);
-        $count = 0;
         // Attempt to send the command
         $r = @fwrite($this->fp, $output);
-
-        while ($r == FALSE && $count < 3) {
-            /*
-               if the command fails, then let's clone the file handle,
-               wait a second, reconnect, and try again.  We will try this 3 times.
-            */
-            status(STATUS_ERROR, "IRR Query - Error on write. Re-connecting...");
-
-            // Make sure we don't leave dangling file pointers around
-            fclose($this->fp);
-
-            sleep(1);
-            $this->connect($this->host, $this->port);
-            $count += 1;
-            $r = @fwrite($this->fp, $output);
-        }
 
         if ($r === FALSE) {
             status(STATUS_ERROR, "IRR Query - Error on write. Re-connect issue...");
@@ -315,6 +298,17 @@ class IRRQuery {
         if (($results = $this->_cache_query("origin", $origin)) != FALSE)
             return $results;
 
+        /* Validate if socket connection is exists */
+        if (feof($this->fp) === true)
+        {
+            status(STATUS_ERROR, "get_v4_routes_by_origin  socket closed.");
+            fclose($this->fp);
+            sleep(2);
+            $this->connect($this->host, $this->port);
+            status(STATUS_ERROR, "get_v4_routes_by_origin reconnecting socket.");
+        }
+
+
         /* Get v4 prefixes */
         $this->_send("!g{$origin}\n");
 
@@ -348,6 +342,16 @@ class IRRQuery {
 
         if (($results = $this->_cache_query("origin6", $origin)) != FALSE)
             return $results;
+
+        /* Validate if socket connection is exists */
+        if (feof($this->fp) === true)
+        {
+            status(STATUS_ERROR, "get_v6_routes_by_origin  socket closed.");
+            fclose($this->fp);
+            sleep(2);
+            $this->connect($this->host, $this->port);
+            status(STATUS_ERROR, "get_v6_routes_by_origin reconnecting socket");
+        }
 
         /* Get v6 prefixes */
         $this->_send("!6{$origin}\n");
