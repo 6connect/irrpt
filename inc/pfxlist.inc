@@ -154,7 +154,7 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
     $pfxname_v6 = sprintf($pfxstr_v6, $asn);
     global $cfg;
 
-    printf("conf t\n");
+    if($cfg['pfxgen']['default_send_cmd']) printf("conf t\n");
     if( $o_4 == 1 && $o_6 == 0 )
     {
         printf("no ip prefix-list %s\n", $pfxname);
@@ -181,7 +181,7 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
         {
             if ( $prefix[1] > $pfxlen )
                 continue;
-    
+
               printf("ip prefix-list %s permit %s/%d", $pfxname, $prefix[0], $prefix[1]);
               if ($prefix[1] < $pfxlen)
                   printf(" le %s", $pfxlen);
@@ -201,8 +201,8 @@ function pfxlist_generate_cisco($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
         printf("\n");
     }
 
-    printf("end\n");
-    printf("write mem\n");
+    if($cfg['pfxgen']['default_send_cmd']) printf("end\n");
+    if($cfg['pfxgen']['default_send_cmd']) printf("write mem\n");
 
     return 0;
 }
@@ -215,21 +215,7 @@ function pfxlist_generate_iosxr($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
     $pfx1st_v6 = 'Y';
     global $cfg;
 
-    printf("conf\n");
-    if( $o_4 == 1 && $o_6 == 0 )
-    {
-        printf("no prefix-set %s\n", $pfxname);
-    }
-    elseif( $o_6 == 1 && $o_4 == 0 )
-    {
-        printf("no prefix-set %s\n", $pfxname_v6);
-    }
-    else
-    {
-        printf("no prefix-set %s\n", $pfxname);
-        printf("no prefix-set %s\n", $pfxname_v6);
-    }
-
+    if($cfg['pfxgen']['default_send_cmd']) printf("conf\n");
     $skipcomma = false;
 
     while (!feof($pfxfile)) {
@@ -302,8 +288,10 @@ function pfxlist_generate_iosxr($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $p
         printf("\n");
         printf("end-set\n");
     }
-    printf("commit\n");
-    printf("exit\n");
+    if($cfg['pfxgen']['default_send_cmd']) {
+      printf("commit\n");
+      printf("exit\n");
+    }
 
     return 0;
 }
@@ -361,7 +349,7 @@ function pfxlist_generate_extreme($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
         {
             if( $prefix[1] > $pfxlen_v6 )
                 continue;
-    
+
             printf("configure access-profile %s add %d permit ipaddress %s/%d", $pfxname_v6, $counter += 10, $prefix[0], $prefix[1]);
             if ($prefix[1] < $pfxlen_v6)
             {
@@ -386,7 +374,7 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
     $v4_list = $v6_list = array();
     global $cfg;
 
-    printf("conf t\n");
+    if($cfg['pfxgen']['default_send_cmd']) printf("conf t\n");
 
     while (!feof($pfxfile)) {
         if (!($line = rtrim(fgets($pfxfile, 64))))
@@ -426,8 +414,10 @@ function pfxlist_generate_force10($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, 
     pfxlist_print_force10($pfxname, $v4_list, 4);
     pfxlist_print_force10($pfxname_v6, $v6_list, 6);
 
-    printf("end\n");
-    printf("write mem\n");
+    if($cfg['pfxgen']['default_send_cmd']) {
+      printf("end\n");
+      printf("write mem\n");
+    }
 
     return 0;
 }
@@ -460,7 +450,7 @@ function pfxlist_generate_openbgpd($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen,
     $v4_list = $v6_list = array();
     global $cfg;
 
-    // printf("conf t\n");
+    if($cfg['pfxgen']['default_send_cmd']) printf("conf t\n");
 
     while (!feof($pfxfile)) {
           if (!($line = rtrim(fgets($pfxfile, 64))))
@@ -606,7 +596,7 @@ function pfxlist_generate_huawei($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $
         {
             if( $prefix[1] > $pfxlen )
                 continue;
-    
+
             printf("ip ip-prefix %s permit %s %d", $pfxname, $prefix[0], $prefix[1]);
             if ($prefix[0] == "0.0.0.0") {
                 printf(" match-network");
@@ -619,7 +609,7 @@ function pfxlist_generate_huawei($pfxfile, $asn, $pfxstr, $pfxstr_v6, $pfxlen, $
         {
             if( $prefix[1] > $pfxlen_v6 )
                 continue;
-        
+
             printf("ip ipv6-prefix %s permit %s %d", $pfxname_v6, $prefix[0], $prefix[1]);
             if ($prefix[0] == "::")
                 printf(" match-network");
